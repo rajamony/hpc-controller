@@ -10,7 +10,11 @@
     "express": "3.x",
     "range-parser": "0.0.4",
     "mongodb": "1.2.x",
-    "mongoose": "3.5.x"
+    "jade": "0.28.x",
+    "mongoose": "3.5.x",
+    "connect-mongo": "0.3.x",
+    "cookie": "0.0.x",
+    "socket.io": "0.9.x"
   },
   "private": true,
   "engines": {
