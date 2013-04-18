@@ -34,15 +34,7 @@ app.use (express.methodOverride());
 app.use (cookieParser);
 app.use (express.session({cookie: {maxAge: new Date(Date.now() + 10*365*86400*1000), httpOnly: /* FIXME */ false}, store: sessionstore}));
 app.use (express.favicon());
-staticurlmaps.each (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
-
-//app.use(function(req, res){
-//  console.log ('Cookie: <' + req.cookies['express.sid'] + '> SessionID: <' + req.sessionID + '>');
-//  var body = '';
-//  if (req.session.views) { ++req.session.views; } else { req.session.views = 1; body += '<p>First time visiting? view this page in several browsers :)</p>'; }
-//  res.send(body + '<p>viewed <strong>' + req.session.views + ' session id ' + req.sessionID + ' </strong> times.</p>');
-//});
-
+staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
 // app.all ('*', AuthenticateUser, LoadUser);
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 

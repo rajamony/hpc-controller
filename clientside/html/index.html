@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>HPC Control Center</title>
+
+  <link href="/clientside/css/lib/bootstrap.css" rel="stylesheet">
+  <link href="/clientside/css/lib/bootstrap-responsive.css" rel="stylesheet">
+  <link href="/clientside/css/newuser.css" rel="stylesheet">
+  
+  <script type="text/javascript" src="/clientside/js/lib/jquery-1.9.1.js"></script>
+  <script type="text/javascript" src="/clientside/js/lib/underscore.js"></script>
+  <script type="text/javascript" src="/clientside/js/lib/socket.io.js"></script>
+  <script type="text/javascript" src="/clientside/js/templates.js"></script>
+
+<script type="text/javascript">
+    $('body').html("");
+    var myInfo;
+    var build_version="075aecf2c4c75bc173d0f612c37e241b71337819";
+    var hostname="arly010";
+    var current_item=window.location.hash.substr(1);
+</script>
+</head>
+
+<body>
+  <noscript>
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="alert alert-block alert-error">
+	<label> The management regrets to inform you that Javascript must be enabled on your browser </label>
+      </div>
+    </div>
+  </div>
+  </noscript>
+
+  <script language="JavaScript" type="text/javascript" xml:space="preserve">
+      $('body').html('<div class="container-fluid"><div class="row-fluid"><label> Loading. Please wait ... </label></div> </div>');
+  </script>
+</body>
+
+</html>
+
