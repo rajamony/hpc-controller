@@ -1,0 +1,19 @@
+<div class="container-fluid">
+    <div class="row-fluid">
+	<h2 class="form-signin-heading">My Settings:</h2>
+	<%  
+	    if (u === null)
+		print ('<h4>Hmm ... you need to <a href="#/">sign in</a> first</h4>');
+	    else {
+		print ('<h4>Username: ' + u.username + '</h4>');
+	%>
+		<label> Full Name </label>  	 <input type="text"     class="input-block-level" name="settings_fullname"  value="<%= u.fullname %>">
+		<label>New Password</label> 	 <input type="password" class="span8" 		  name="settings_password"  placeholder="New Password">
+		<label>Re-enter New Password</label> <input type="password" class="span8" 		  name="settings_password2" placeholder="Re-enter New Password">
+		<button data-loading-text="Saving ..." data-complete-text="Saved!" onclick="UpdateUser(this)" class="btn btn-large btn-primary">Save Changes</button>
+      
+	<%  
+	    } 
+	%>
+    </div> 
+</div>

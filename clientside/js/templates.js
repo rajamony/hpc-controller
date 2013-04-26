@@ -1,8 +1,93 @@
 (function ($) {
-    var user = null;
+    var prevhash = null;
     var menus = [];
     var socket = io.connect ("/");
     var templatecache = {};
+    var self = this;
+    var user = null;
+
+    $(window).bind('hashchange', function() { HandleHash(window.location.hash); });
+    $(document).ready (function () { HandleHash (window.location.hash);});
+
+    DisplayErrors = function (stringorarrayofstrings) {
+	errors = [].concat (stringorarrayofstrings);	// Make it an array - error path, performance doesn't matter
+	_.each (errors, function (e) {
+		$('#errorbox').prepend ('<p> <i class="icon-exclamation-sign"></i>' + e + '</p>');	// looks nice than an <li>
+	    });
+        if (errors.length)
+	    $('#errorbox').show();
+    }
+
+    ClearErrors = function () {
+        $('#errorbox').hide();
+	$('#errorbox').empty();
+    }
+
+    function SetUser (u) {
+	user = u;
+        console.dir (u);
+	// Now let the other views know about new user
+	// _.each( menus, function(menu) { if ( menu.NewUser ) { menu.NewUser(newuser); } });
+    }
+
+    /* FIXME - this function is polluting the window namespace */
+    window.SignIn = function (src) {
+	ClearErrors ();
+	var username = $('input[name=username]').val();
+	var password = $('input[name=password]').val();
+	var errors = [];
+
+	if (username.length === 0) errors.push("Username cannot be empty");
+	if (password.length === 0) errors.push("Password cannot be empty");
+	if (errors.length !== 0)
+	    DisplayErrors (errors);
+	else {
+	    $(src).button('loading');
+	    socket.emit ('signin', {username: username, password: password})
+	}
+    };
+
+    /* FIXME - this function is polluting the window namespace */
+    window.SignUp = function(src) {
+	ClearErrors();
+	var username = $('input[name=signup_username]').val();
+	var authcode = $('input[name=signup_authcode]').val();
+	var password = $('input[name=signup_password]').val();
+	var password2 = $('input[name=signup_password2]').val();
+	var errors = [];
+
+	if (username.length === 0) errors.push("Username cannot be empty");
+	if (password.length === 0) errors.push("Password cannot be empty");
+	if (authcode.length === 0) errors.push("Authorization code cannot be empty");
+	if (password !== password2) errors.push("Passwords do not match");
+
+	if (errors.length !== 0)
+	    DisplayErrors (errors);
+	else {
+	    $(src).button('loading');
+	    socket.emit ('signup', {username: username, authcode: authcode, password: password});
+	}
+    }
+
+    /* FIXME - this function is polluting the window namespace */
+    window.UpdateUser = function(src) {
+	ClearErrors();
+	var fullname = $('input[name=settings_fullname]').val();
+	var password = $('input[name=settings_password]').val();
+	var password2 = $('input[name=settings_password2]').val();
+	var errors = [];
+
+	if (fullname.length === 0) errors.push("We need you to have a name");
+	if (password.length === 0) errors.push("Password cannot be empty");
+	if (password !== password2) errors.push("Passwords do not match");
+
+	if (errors.length !== 0) 
+	    DisplayErrors (errors);
+	else {
+	    $(src).button('loading');
+	    socket.emit ('updateuser', {username: user.username, fullname: fullname, password: password});
+	}
+    }
 
     // See http://stackoverflow.com/questions/8366733/external-template-in-underscore
     function RenderTemplate (templatename, templatedata) {
@@ -13,6 +98,10 @@
 		async: false,
 		success: function (data) {
 		    templatecache[templatename] = _.template(data);
+		},
+		error: function (xhr, status, error) {
+		    console.error ("Server side error: " + xhr.responseText + ' ' + error);
+		    templatecache[templatename] = _.template (xhr.responseText + '<p>' + error);
 		}
 	    });
 	}
@@ -36,142 +125,63 @@
     }
 
     function HandleHash (hash) {
-	    if ( lastHash === hash ) {
-		    //return;
-	    }
+	console.log ("\nEntered HandleHash. Current = <" + hash + "> Previous = <" + self.prevhash + ">");
+	ClearErrors();
+	if (hash === self.prevhash) {
+	    console.log ("Hash has not changed!");
+	    return;
+	}
 
-	    console.log("Handling hash of " + hash);
+	hash = hash.replace (/\/+$/,"");
+	var path = hash.split ('/');
+	if (path.length == 1)
+	    path.push ("login");
 
-	    var path = hash.split('/');
-	    var resource = path[1];
-	    path.splice(0,2);
-
-	    CheckSession();
-
-	    DismissMessages();
-
-	    $(".eos-nav-button").parent().removeClass("active");
-
-	    //
-	    // Be sure to close any previous views
-	    //
-	    _.each( menus, function(menu) {
-		    if ( menu.closeView ) {
-			    menu.closeView();
-		    }
-	    })
-
-	    //
-	    //	Select button that ends with our current hash and highlight the parent <li>
-	    //
-	    if ( resource && resource.length > 0 ) {
-		    $(".eos-nav-button[href^=\'#/"+resource+"\']").parent().addClass("active");
-	    }
-
-	    var found = false;
-
-	    if ( !user ) {
-		    RenderBody();
-		    found = true;
-	    } else {
-
-		    if ( !resource ) {
-			    resource = "";
-		    }
-
-		    switch( resource ) {
-    case 'oauth':
-      var appname = path[0];
-      var transactionID = path[1];
-      var appid = path[2];
-      var query = path[3];
-
-      if (user.authorized_apps.indexOf(appid) >= 0) {
-	window.location.replace('/dialog/oauth?'+query);
-      } else {
-	var formHTML = '<div class="container-fluid">\
-	<div class="row-fluid">\
-	<div class="span12 well">\
-	<form action="/dialog/oauth/decision" method="POST">\
-	  <fieldset>\
-	    <legend>App authorization</legend>\
-	    <span class="help-block">Do you want authorize '+appname+'?<span>\
-	    <button type="submit" class="btn" name="cancel" value="Deny">No</button>\
-	    <button type="submit" class="btn btn-primary" value="Allow">Yes</button>\
-	    <input type="hidden" name="transaction_id" value="'+transactionID+'"></input>\
-	  </fieldset>\
-	</form></div></div></div>';
-
-	$("#mainbody").html(formHTML);
-	//remove topbar!
-	$("#topbar").hide();
-	break;
-      }
-			    case "debug":
-				    RenderDebug();
-				    found = true;
-				    break;
-			    case "about":
-				    RenderAbout();
-				    found = true;
-				    break;
-			    case "docs":
-				    RenderDocs();
-				    found = true;
-				    break;
-			    case "logout":
-				    Logout();
-				    found = true;
-				    //window.location.replace(window.location.toString().split("#")[0] + "#/");
-				    break;
-			    case "":
-				    RenderBody();
-				    found = true;
-				    break;
-			    default:
-			    {
-				    _.each( menus, function(menu) {
-					    if ( menu.label.toLowerCase() == resource.toLowerCase() ) {
-
-						    if ( menu.ref.hidden == false ) {
-							    menu.OpenView("#mainbody",path);
-							    found = true;
-						    } else {
-							    console.log("Found menu for " + menu.label + " but it is hidden ");
-						    }
-					    }
-				    })
-
-				    if ( !found ) {
-					    RenderBody();
-					    console.log("Warning: Don't know what to do with action (" + resource + ") yet.");
-				    }
-				    break;
-			    }
-		    }
-	    }
-
-	    if ( found ) {
-		    lastHash = hash;
-	    }
+	RenderBase();
+	RenderTopbar();
+	switch (path[1]) {
+	    case 'welcome':
+		$('#mainbody').html(RenderTemplate ('settings.template.html', {u: user}));
+		break;
+	    case 'administer':
+	    	socket.emit ('getuserlist', {});
+		break;
+	    case 'settings':
+		$('#mainbody').html(RenderTemplate ('settings.template.html', {u: user}));
+		break;
+	    default:		// Default to the login window
+	        hash = '#/';	// Force it to the login hash
+	    case 'login':
+		$('#mainbody').html(RenderTemplate ('login.template.html', {}));
+		break;
+	}
+	window.location.hash = self.prevhash = hash;
     }
-    
-    $(window).bind('hashchange', function() {
-	    console.log("Hash changed")
-	    HandleHash(window.location.hash);
-    });
-
 
     // Now set up the socketIO stuff. We already have our login information 
-    socket.on ("authenticate", function (data) {
-    	    console.log ("SOCKET: authenticate");
-	    socket.emit ('doyouknowme', {data: 'asas'})
-	});
-    socket.on ("welcomeback", function (data) {
-	    console.log ("SOCKET: welcomeback <" + data.name + ">\nCookies: " + document.cookie); 
-	    RenderBase();
-	    RenderTopbar();
-	    $('#mainbody').html(RenderTemplate ('login.template.html', {}));
+    socket.on ("signup_granted", function (u) {
+	    SetUser (u);
+    	    HandleHash ('#/welcome');
 	});
 
+    socket.on ("adduser_granted", function (u) {
+	    console.log ('User authorized: ');
+    	    console.dir (u);
+	});
+
+    socket.on ("getuserlist_granted", function (u) {
+	    console.log ('Getuserlist granted: ');
+    	    console.dir (u);
+	    managedusers = u;
+	    $('#mainbody').html(RenderTemplate ('administer.template.html', {u: managedusers}));
+	});
+
+    socket.on ("signin_granted", function (u) {
+	    SetUser (u);
+	    HandleHash ('#/welcome');
+	});
+
+    socket.on ('error', function (data) {
+	    $('#mainbody').html(RenderTemplate ('error.template.html', data));
+	});
 })(jQuery);

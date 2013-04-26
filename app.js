@@ -4,53 +4,49 @@
 **/
 "use strict";
 
-var port 	= process.env.PORT || 9080;
-var hostname 	= process.env.HOSTURL || "0.0.0.0";
-var SITE_SECRET = 'Boston Marathon'; // Math.random().toString();
-
-var 	fs = require ('fs'),
+var 	port 	= process.env.PORT || 9080,
+	hostname 	= process.env.HOSTURL || "0.0.0.0",
+	SITE_SECRET = 'Boston Marathon'; // Math.random().toString();
+	// SITE_SECRET = Math.random().toString();
+var 	util = require ('util'), 
+	fs = require ('fs'),
 	express  = require ('express'),
+	logic = require ('./js/logic.js'),
 	cookieParser = express.cookieParser(SITE_SECRET),
 	app = express(),
     	ssl_options = { key: fs.readFileSync('/opt/keys/root-ca.key'), cert: fs.readFileSync('/opt/keys/cert.pem')},
     	server = require('http').createServer (app), // require('https').createServer (ssl_options, app),
-    	io = require('socket.io').listen(server),
-	sessionstore_options = { auto_reconnect: true, url: 'mongodb://localhost:27017/hpc/sessions', stringify: true, /* clear_interval: -1, */ },
-	sessionstore = new ((require('connect-mongo'))(express))(sessionstore_options),
-	staticurlmaps = [
-		{ root: '/clientside/html', 			disklocation: '/clientside/html'},
-		{ root: '/clientside/css', 			disklocation: '/clientside/css'},
-		{ root: '/clientside/js', 			disklocation: '/clientside/js'},
-		{ root: '/clientside/underscore_templates', 	disklocation: '/clientside/underscore_templates'},
-		{ root: '/', 					disklocation: '/clientside/html'},
+    	io = require('socket.io').listen(server, {'log level': 1}),
+	users = (require('monk')('mongodb://localhost:27017/hpc')).get('users'),
+	sessionstore = new ((require('connect-mongo'))(express))({auto_reconnect: true, url: 'mongodb://localhost:27017/hpc/sessionstore', stringify: true, /* clear_interval: -1, */ }),
+	staticurlmaps = [ 	{ root: '/clientside/html', 			disklocation: '/clientside/html'},
+				{ root: '/clientside/css', 			disklocation: '/clientside/css'},
+				{ root: '/clientside/js', 			disklocation: '/clientside/js'},
+				{ root: '/clientside/underscore_templates', 	disklocation: '/clientside/underscore_templates'},
+				{ root: '/', 					disklocation: '/clientside/html'},
 	    ];
 
-io.set ('log level', 1);
 app.set ('case sensitive routing', true);
-app.use (app.router);			// Dynamic routes come first, then static files. See http://tinyurl.com/afab75h
 app.use (express.logger('dev'));
 app.use (express.bodyParser());		// To handle POSTs.
-app.use (express.methodOverride());
+app.use (express.methodOverride());	// To get app.get, app.put, etc.
 app.use (cookieParser);
 app.use (express.session({cookie: {maxAge: new Date(Date.now() + 10*365*86400*1000), httpOnly: /* FIXME */ false}, store: sessionstore}));
 app.use (express.favicon());
-staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
-// app.all ('*', AuthenticateUser, LoadUser);
+app.use (app.router);	// I still don't understand wtf this does. http://tinyurl.com/afab75h is not entirely correct
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
+staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
 
 var sessionSockets = new (require('session.socket.io')) (io, sessionstore, cookieParser, 'connect.sid');
 sessionSockets.on('connection', function (err, socket, session) {
-	console.log ("Error: " + err); console.dir (session);
-	if (typeof session.user === "undefined") {
-	    socket.emit ('authenticate', {});
-	    session.user = {name: 'larry'};
+	if (err !== null)
+	    socket.emit ('error', {message: 'Cookies must be enabled on your browser'});
+	else if (typeof session !== 'undefined' && typeof session.user === 'undefined') {
+	    // Dive into Mongo and set up the user structure IF we already know the user
+	    console.log ('sessionSockets CONNECTION> Error: <' + err + '> session user data: <' + util.inspect (session.user, {colors: true}) + '>');
 	}
-
-        socket.on ('doyouknowme', function (data) {
-		console.log ("Got a doyouknowme");
-		if (typeof session.user !== "undefined")
-		    socket.emit ('welcomeback', {name: session.user.name});
-	    });
+	logic.SetupHandlers (err, socket, session, users);
     });
 
+logic.Precondition (users, fs);
 server.listen (port, hostname);
