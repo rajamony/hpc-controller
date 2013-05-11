@@ -1,0 +1,76 @@
+<div class="row">
+<div class="span5">
+  <div class="form-signin">
+    <h2 class="form-signin-heading">Sign in</h2>
+    <form name="logindialog" novalidate ng-submit="SignIn()">
+      <div>
+        <label class="control-label"> Username <br>
+          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w*$/" ng-model="username" required>
+	</label>
+        <div class="nitpick" ng-class="(logindialog.username.$viewValue.length && logindialog.username.$invalid) && 'makemevisible'">
+	  Must be one word
+        </div>
+      </div>
+
+      <label class="control-label"> Password <br>
+        <input name="password" type="password" placeholder="Password" ng-model="password" required>
+      </label>
+      <br>
+      <input type="submit" class="btn btn-large btn-primary" ng-disabled="logindialog.$invalid" value="Sign in">
+    </form>
+  </div>
+</div>
+
+
+<div class="span5">
+  <div class="form-signin">
+    <h2 class="form-signin-heading">Create an account</h2>
+    <form name="signupdialog" novalidate ng-submit="SignUp()">
+      <div>
+        <label class="control-label"> Assigned username <br>
+          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w*$/" ng-model="username" required>
+        </label>
+        <div class="nitpick" ng-class="(signupdialog.username.$viewValue.length && signupdialog.username.$invalid) && 'makemevisible'">
+          Must be one word
+        </div>
+      </div>
+
+      <div>
+        <label class="control-label"> Authorization code <br>
+          <input name="authcode" type="text" placeholder="Authorization Code" ng-pattern="/^\w*$/" ng-model="authcode" required>
+        </label>
+        <div class="nitpick" ng-class="(signupdialog.authcode.$viewValue.length && signupdialog.authcode.$invalid) && 'makemevisible'">
+          Must be one word
+        </div>
+      </div>
+
+      <div>
+        <label class="control-label">Password <br>
+          <input name="password" type="password" placeholder="Password" ng-pattern="/^(?=.*[^a-zA-Z])(?=.*[a-z])(?=.*[A-Z])\S{8,}$/" ng-model="password" required>
+        </label>
+        <div class="nitpick" ng-class="(signupdialog.password.$viewValue.length && signupdialog.password.$invalid) && 'makemevisible'">
+            Password must have no whitespace and at least:
+            <ul>
+              <li ng-class="(signupdialog.password.$viewValue.search('[^a-zA-Z]') != -1) && 'nonit'"> One <strong>number or special character</strong></li>
+              <li ng-class="(signupdialog.password.$viewValue.search('[a-z]') != -1) && 'nonit'">     One <strong>lower case letter</strong></li>
+              <li ng-class="(signupdialog.password.$viewValue.search('[A-Z]') != -1) && 'nonit'">     One <strong>upper case letter</strong></li>
+              <li ng-class="(signupdialog.password.$viewValue.length >= 8) && 'nonit'">               <strong>Eight</strong> characters</li>
+            </ul>
+        </div>
+      <div>
+
+      <div>
+        <label class="control-label">Re-enter password <br>
+          <input name="password2" type="password" placeholder="Re-enter password" ng-model="password2" required>
+        </label>
+        <div class="nitpick" ng-class="signupdialog.password2.$viewValue.length && (signupdialog.password.$viewValue != signupdialog.password2.$viewValue) && 'makemevisible'">
+            Passwords must match
+        </div>
+      <div>
+      <br>
+      <input type="submit" class="btn btn-large btn-primary" ng-disabled="signupdialog.$invalid" value="Sign XX up">
+
+    </form>
+  </div>
+</div> 
+</div> 

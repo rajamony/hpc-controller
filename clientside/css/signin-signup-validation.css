@@ -1,0 +1,87 @@
+/* app css stylesheet */
+
+.menu {
+  list-style: none;
+  border-bottom: 0.1em solid black;
+  margin-bottom: 2em;
+  padding: 0 0 0.5em;
+}
+
+.menu:before {
+  content: "[";
+}
+
+.menu:after {
+  content: "]";
+}
+
+.menu > li {
+  display: inline;
+}
+
+.menu > li:before {
+  content: "|";
+  padding-right: 0.3em;
+}
+
+.menu > li:nth-child(1):before {
+  content: "";
+  padding: 0;
+}
+
+/* Nitpicks are turned on via angular */
+.nitpick {
+  display: none
+}
+.nitpick li {
+  padding-left: 22px;
+  line-height: 24px;
+  color:#ec3f41;
+  list-style: none;
+  margin-left: 0;
+  padding-left: 1em;
+  text-indent: -2em;
+}
+.nitpick li:before {
+  content: "\2326";
+}
+
+/* Set to green when valid */
+.nitpick li.nonit {
+  color:#3a7d34;
+}
+.nitpick li.nonit:before {
+  content: "\2713";
+}
+
+
+.control-label {
+  display: inline;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.makemevisible {
+  display: inline;
+  position: absolute;
+  margin-left: 9px;
+  width:200px;
+  padding:7px;
+  background:#fefefe;
+  font-size:.975em;
+  border-radius:5px;
+  box-shadow:0 1px 3px #aaa;
+  border:1px solid red;
+color: red;
+}
+.makemevisible::before {
+  content: "\25C0";
+  position: absolute;
+  top:10px;
+  left:-13px;
+  font-size:16px;
+  line-height:16px;
+  color:red;
+  text-shadow:none;
+}
+

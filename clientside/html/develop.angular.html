@@ -1,0 +1,43 @@
+<div class="row" ng-show="user">
+
+  <div class="span4">
+    <div class="form-signin">
+      <form name="addprojectdialog" novalidate ng-submit="AddProject()">
+          <input name="projectname" type="text" placeholder="Project name" ng-pattern="/^\w*[^ ]$/" ng-model="projectname" required>
+          <div class="nitpick" ng-class="(addprojectdialog.projectname.$viewValue.length && addprojectdialog.projectname.$invalid) && 'makemevisible'">
+  	  Need one word, at most 32 characters
+          </div>
+        <input type="submit" class="btn btn-primary" ng-disabled="addprojectdialog.$invalid" value="Add new project">
+      </form>
+    </div>
+  </div>
+
+  <div class="span8">
+    <div class="form-signin">
+      <h4> Current projects: </h4>
+      <form novalidate ng-show="myprojects.length">
+        <table class="table table-striped table-bordered manage" ng-show="myprojects">
+          <tr> 
+            <th> Project Name </th>
+            <th> Github Hook </th>
+            <th class="selectit"> Choose
+	    	 <label class="checkbox"> 
+	    		{{_allprojects && "Unselect" || "Select"}} all <input class="btn" ng-change="ProjectSelected (false, _allprojects)" ng-model="_allprojects" type="checkbox"> 
+		 </label>
+	    </th>
+          </tr>
+          <tr ng-repeat="u in myprojects">
+            <td> {{u.projectname}} </td>
+            <td> {{u.details}} </td> 
+            <td class="selectit"> <input type="checkbox" ng-change="ProjectSelected(true, u.mustact)" ng-model="u.mustact" ng-checked="u.mustact"> </td>
+          </tr>
+        </table>
+        <input type="submit" class="btn btn-primary" ng-click="DeleteProject()" ng-disabled="numprojectstoactupon==0" value="Delete project">
+      </form>
+      <div ng-show="myprojects.length==0">
+        There are no projects to administer right now. Try adding projects.
+      </div>
+    </div>
+  </div>
+
+</div>

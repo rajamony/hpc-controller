@@ -1,0 +1,36 @@
+<!-- Top Navigation banner -->
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <a href="/" class="eos-nav-button brand">{{site_title}}</a>
+      <ul class="nav">
+        <li ng-repeat="m in menus"> {{m.label}} </li>
+      </ul>
+      <ul class="nav">
+        <li> foo={{foo}} </li>
+      </ul>
+      <ul class="nav pull-right">
+        <li class="dropdown pull-right" style="display: block; width: 160px;">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="main" ng-show="user">{{user.fullname}}</a>
+          <ul class="dropdown-menu" ng-show="user">
+              <li><a href="#/administer" ng-show="(-1 != user.roles.indexOf ('admin'))">Administer</a></li>
+              <li><a href="#/develop"    ng-show="(-1 != user.roles.indexOf ('developer'))">Develop</a></li>
+              <li><a href="#/settings">Account Settings</a></li>
+              <li> <a href="#/logout">Logout</a></li>
+              <!-- <li ng-click="SignOut()"> <a href="#/logout">Logout</a></li> -->
+	      <!-- FIXME: Keeping <a> to co-exist with bootstrap.css. Ideally, I would only use angular's ng-click -->
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- A div for errors. Displayed only if there are any errors to show -->
+<div class="row errorbox" ng-show="error.length">
+  <div class="alert alert-error">
+    <ul>
+      <li ng-repeat="e in error"> {{e}} </li>
+    </ul>
+  </div>
+</div>

@@ -7,7 +7,6 @@
 var 	port 	= process.env.PORT || 9080,
 	hostname 	= process.env.HOSTURL || "0.0.0.0",
 	SITE_SECRET = 'Boston Marathon'; // Math.random().toString();
-	// SITE_SECRET = Math.random().toString();
 var 	util = require ('util'), 
 	fs = require ('fs'),
 	express  = require ('express'),
@@ -17,13 +16,12 @@ var 	util = require ('util'),
     	ssl_options = { key: fs.readFileSync('/opt/keys/root-ca.key'), cert: fs.readFileSync('/opt/keys/cert.pem')},
     	server = require('http').createServer (app), // require('https').createServer (ssl_options, app),
     	io = require('socket.io').listen(server, {'log level': 1}),
-	users = (require('monk')('mongodb://localhost:27017/hpc')).get('users'),
+	users = (require('./js/monkwithq')('mongodb://localhost:27017/hpc')).get('users'),	// Wraps guille's Monk with Q's promises
 	sessionstore = new ((require('connect-mongo'))(express))({auto_reconnect: true, url: 'mongodb://localhost:27017/hpc/sessionstore', stringify: true, /* clear_interval: -1, */ }),
-	staticurlmaps = [ 	{ root: '/clientside/html', 			disklocation: '/clientside/html'},
-				{ root: '/clientside/css', 			disklocation: '/clientside/css'},
-				{ root: '/clientside/js', 			disklocation: '/clientside/js'},
-				{ root: '/clientside/underscore_templates', 	disklocation: '/clientside/underscore_templates'},
-				{ root: '/', 					disklocation: '/clientside/html'},
+	staticurlmaps = [ 	{ root: '/html', 			disklocation: '/clientside/html'},
+				{ root: '/css', 			disklocation: '/clientside/css'},
+				{ root: '/js', 				disklocation: '/clientside/js'},
+				{ root: '/', 				disklocation: '/clientside/html'},
 	    ];
 
 app.set ('case sensitive routing', true);
@@ -40,13 +38,14 @@ staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname 
 var sessionSockets = new (require('session.socket.io')) (io, sessionstore, cookieParser, 'connect.sid');
 sessionSockets.on('connection', function (err, socket, session) {
 	if (err !== null)
-	    socket.emit ('error', {message: 'Cookies must be enabled on your browser'});
-	else if (typeof session !== 'undefined' && typeof session.user === 'undefined') {
+	    socket.emit ('error', {message: 'It looks like cookies are not enabled on your browser. Details: <' + err + '>'});
+	else if (typeof session !== 'undefined' && typeof session.userinfo === 'undefined') {
 	    // Dive into Mongo and set up the user structure IF we already know the user
-	    console.log ('sessionSockets CONNECTION> Error: <' + err + '> session user data: <' + util.inspect (session.user, {colors: true}) + '>');
+	    // I don't think I need this codepath - the following diag provides no addnl useful information
+	    console.log ('sessionSockets CONNECTION> Error: <' + err + '> session user data: <' + util.inspect (session.userinfo, {colors: true}) + '>');
 	}
 	logic.SetupHandlers (err, socket, session, users);
     });
 
-logic.Precondition (users, fs);
+logic.Precondition (fs, users);
 server.listen (port, hostname);

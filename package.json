@@ -24,6 +24,7 @@
     "cookie": "0.0.x",
     "monk": "0.7.x",
     "bcrypt": "0.x",
+    "q": "0.9.x",
     "socket.io": "0.9.x"
   },
   "devDependencies": {
