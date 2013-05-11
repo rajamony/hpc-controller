@@ -11,14 +11,12 @@
       </ul>
       <ul class="nav pull-right">
         <li class="dropdown pull-right" style="display: block; width: 160px;">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="main" ng-show="user">{{user.fullname}}</a>
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" ng-show="user">{{user.fullname}}</a>
           <ul class="dropdown-menu" ng-show="user">
               <li><a href="#/administer" ng-show="(-1 != user.roles.indexOf ('admin'))">Administer</a></li>
               <li><a href="#/develop"    ng-show="(-1 != user.roles.indexOf ('developer'))">Develop</a></li>
               <li><a href="#/settings">Account Settings</a></li>
-              <li> <a href="#/logout">Logout</a></li>
-              <!-- <li ng-click="SignOut()"> <a href="#/logout">Logout</a></li> -->
-	      <!-- FIXME: Keeping <a> to co-exist with bootstrap.css. Ideally, I would only use angular's ng-click -->
+              <li ng-click="SignOut()"> <a href="#/">Logout</a></li>
           </ul>
         </li>
       </ul>

@@ -6,8 +6,8 @@ var globsocket;
 var app = angular.module('myApp', [])
   .config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $routeProvider.when('/administer',	{templateUrl: '/html/admin.angular.html', 	controller: AdministerCtrl});
-    $routeProvider.when('/', 		{templateUrl: '/html/login.angular.html', 	controller: FrontDoorCtrl, myaction: 'signin'});
-    $routeProvider.when('/logout', 	{templateUrl: '/html/login.angular.html', 	controller: FrontDoorCtrl, myaction: 'signout'});
+    $routeProvider.when('/', 		{templateUrl: '/html/login.angular.html', 	controller: FrontDoorCtrl});
+//  Access a property foo in the $routeProvider argument as $route.current.foo
     $routeProvider.when('/develop', 	{templateUrl: '/html/develop.angular.html', 	controller: DevelopCtrl});
 //  $routeProvider.when('/settings', 	{templateUrl: '/html/settings.angular.html',	controller: SettingsCtrl});
 
@@ -39,8 +39,7 @@ function wrappedSocket (therealsocket, applyscope) {
 }
 
 wrappedSocket.prototype.on = function (event, fn) {
-    console.log ('--> adding listener for event <' + event + '> Callback:\n' + fn.toString());
-    var therealsocket = this.therealsocket
+    var therealsocket = this.therealsocket;
     var applyscope = this.applyscope;
     var commonwrapper = function (__varargs__) {
 	var varargs = arguments;
@@ -52,10 +51,22 @@ wrappedSocket.prototype.on = function (event, fn) {
     therealsocket.on (event, commonwrapper);
 }
 
+wrappedSocket.prototype.emit = function (event, data, fn) {
+    var therealsocket = this.therealsocket;
+    var applyscope = this.applyscope;
+    var commonwrapper = function (__varargs__) {
+	var varargs = arguments;
+	if (typeof fn !== 'undefined')
+	    applyscope.$apply (function () {
+		fn.apply (therealsocket, varargs);
+	      });
+      };
+    therealsocket.emit (event, data, commonwrapper);
+}
+
 wrappedSocket.prototype.cleanUp = function () {
     var therealsocket = this.therealsocket;
     this.handlers.forEach (function (h) {
-	console.log ('    cleanup: removing handler for event <' + h.event + '> '); //  Callback:\n' + h.fn.toString());
         therealsocket.removeListener (h.event, h.fn);
       });
 }
@@ -64,19 +75,6 @@ wrappedSocket.prototype.emit = function (event, data) {
     this.therealsocket.emit (event, data);
 }
 
-
-/* Services */
-// Demonstrate how to register services
-// In this case it is a simple value service.
-/*
-angular.module ('myServices', []).
-  factory ('pocket', function ($rootScope) {
-    console.log ("FACTORY invoked");
-    var psocket = io.connect();
-    return new wrappedSocket (psocket, $rootScope);
-  });
-
-*/ 
 
 /**
  * MainCtrl: handles housekeeping functions, root scope management, and signing out
@@ -91,12 +89,21 @@ console.log ("MainCtrl INVOKED");
 
   var socket = wrappedsocket(rootscope);
 
-  console.dir (socket);
-
   /**
    * Common handlers. The server sends out certain events across all views. The socket.io handlers for these events
    * need to be in place for all controllers. 
    */
+  function commonSignInUp (u) {
+    rootscope.SetUser (u);
+    console.log ("signin_granted: User is " + u + " path is " + $location.path());
+    if (-1 !== ['/', '/logout'].indexOf($location.path()))
+      $location.path ((-1 === u.roles.indexOf ('admin')) ? '/develop' : '/administer');
+  }
+
+  socket.on ("signin_granted", commonSignInUp);
+
+  socket.on ("signup_granted", commonSignInUp);
+
   socket.on('info', function (data) {
       rootscope.site_title = data.site_title;
     });
@@ -105,15 +112,6 @@ console.log ("MainCtrl INVOKED");
       console.log ("Got an error: [" + data.seqno + "] " + data.message);
       rootscope.error.push (data.message);
     });
-
-  function commonSignInUp (u) {
-    rootscope.SetUser (u);
-    console.log ("signin_granted: User is " + u + " path is " + $location.path());
-    if (-1 !== ['/', '/logout'].indexOf($location.path()))
-      $location.path ((-1 === u.roles.indexOf ('admin')) ? '/develop' : '/administer');
-  }
-  socket.on ("signin_granted", commonSignInUp);
-  socket.on ("signup_granted", commonSignInUp);
 
   /**
    * Common helpers. Other controllers invoke them via the rootScope 
@@ -147,11 +145,9 @@ console.log ("MainCtrl INVOKED");
  * FrontDoorCtrl: handles authentication and sign up (for authorized users) but NOT sign out.
  */
 FrontDoorCtrl.$inject = ['$scope', '$location', 'pocket', '$route', '$rootScope'];
-function FrontDoorCtrl ($scope, $location, socket, $route, rootscope) {
-  console.log ("FrontDoorCtrl INVOKED");
+function FrontDoorCtrl ($scope, $location, wrappedsocket, $route, rootscope) {
 
-  if ($route.current.myaction === 'signout')
-      rootscope.SignOut();
+  var socket = wrappedsocket ($scope);
 
   $scope.SignIn = function () {
       rootscope.ClearErrors();
@@ -170,7 +166,6 @@ function FrontDoorCtrl ($scope, $location, socket, $route, rootscope) {
  */
 AdministerCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function AdministerCtrl ($scope, $location, wrappedsocket, rootscope) {
-console.log ("AdministerCtrl INVOKED");
   $scope.numuserstoactupon = 0;
   $scope.managedusers = null;
   var socket = wrappedsocket ($scope);
@@ -201,6 +196,7 @@ console.log ("AdministerCtrl INVOKED");
   }
 
   $scope.DeleteUser = function () {
+      $scope.allselected = false;
       $scope.ClearErrors();
       $scope.managedusers.forEach (function (u) {
               if (u.mustact) {
@@ -210,7 +206,6 @@ console.log ("AdministerCtrl INVOKED");
   }
 
   socket.on ("getuserlist_granted", function (u) {
-      console.log ("    Got a getuserlist_granted");
       $scope.managedusers = u;
     });
 
@@ -225,7 +220,6 @@ console.log ("AdministerCtrl INVOKED");
 DevelopCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numprojectstoactupon = 0;
-  console.log ("DevelopCtrl INVOKED");
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getprojectlist", {});
@@ -251,7 +245,6 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
           socket.emit ("deleteproject", {projectname: u.projectname});
       });
   }
-  console.log ("DevelopCtrl INVOKED2");
 
   socket.on ("getprojectlist_granted", function (u) {
       $scope.myprojects = u;

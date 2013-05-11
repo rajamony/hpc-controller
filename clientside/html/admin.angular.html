@@ -22,7 +22,7 @@
             <th> Authorization code </th>
             <th class="selectit"> Delete
 	    	 <label class="checkbox"> 
-	    		{{_allusers && "Unselect" || "Select"}} all <input class="btn" ng-change="UserSelected (false, _allusers)" ng-model="_allusers" type="checkbox"> 
+	    		{{allselected && "Unselect" || "Select"}} all <input class="btn" ng-change="UserSelected (false, allselected)" ng-model="allselected" type="checkbox"> 
 		 </label>
 	    </th>
           </tr>
