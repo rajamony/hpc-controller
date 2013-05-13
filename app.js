@@ -44,8 +44,10 @@ sessionSockets.on('connection', function (err, socket, session) {
 	    // I don't think I need this codepath - the following diag provides no addnl useful information
 	    console.log ('sessionSockets CONNECTION> Error: <' + err + '> session user data: <' + util.inspect (session.userinfo, {colors: true}) + '>');
 	}
-	logic.SetupHandlers (err, socket, session, users);
+	logic.main (err, socket, session, users);
     });
 
-logic.Precondition (fs, users);
-server.listen (port, hostname);
+logic.setup (fs, users, port, hostname);
+server.listen (port, hostname, function () {
+console.log (server.address());
+});

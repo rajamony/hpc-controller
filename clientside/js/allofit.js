@@ -9,7 +9,7 @@ var app = angular.module('myApp', [])
     $routeProvider.when('/', 		{templateUrl: '/html/login.angular.html', 	controller: FrontDoorCtrl});
 //  Access a property foo in the $routeProvider argument as $route.current.foo
     $routeProvider.when('/develop', 	{templateUrl: '/html/develop.angular.html', 	controller: DevelopCtrl});
-//  $routeProvider.when('/settings', 	{templateUrl: '/html/settings.angular.html',	controller: SettingsCtrl});
+    $routeProvider.when('/settings', 	{templateUrl: '/html/settings.angular.html',	controller: SettingsCtrl});
 
     $routeProvider.otherwise({redirectTo: '/'});
 //  $locationProvider.html5Mode(true);
@@ -246,11 +246,20 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
       });
   }
 
-  socket.on ("getprojectlist_granted", function (u) {
-      $scope.myprojects = u;
+  socket.on ("getprojectlist_granted", function (p) {
+      $scope.myprojects = p;
+      console.log ('myprojects:');
+      console.dir (p);
     });
 
   socket.on ("addproject_granted", function (u) {
       console.log ('Project added: ' + JSON.stringify(u));
     });
+}
+
+/**
+ * SettingsCtrl: allowing users to change their settings
+ */
+SettingsCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
+function SettingsCtrl ($scope, $location, wrappedsocket, rootscope) {
 }

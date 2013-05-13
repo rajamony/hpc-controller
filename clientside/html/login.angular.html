@@ -5,7 +5,7 @@
     <form name="logindialog" novalidate ng-submit="SignIn()">
       <div>
         <label class="control-label"> Username <br>
-          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w*$/" ng-model="username" required>
+          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w+$/" ng-model="username" required>
 	</label>
         <div class="nitpick" ng-class="(logindialog.username.$viewValue.length && logindialog.username.$invalid) && 'makemevisible'">
 	  Must be one word
@@ -28,7 +28,7 @@
     <form name="signupdialog" novalidate ng-submit="SignUp()">
       <div>
         <label class="control-label"> Assigned username <br>
-          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w*$/" ng-model="username" required>
+          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w+$/" ng-model="username" required>
         </label>
         <div class="nitpick" ng-class="(signupdialog.username.$viewValue.length && signupdialog.username.$invalid) && 'makemevisible'">
           Must be one word
@@ -37,7 +37,7 @@
 
       <div>
         <label class="control-label"> Authorization code <br>
-          <input name="authcode" type="text" placeholder="Authorization Code" ng-pattern="/^\w*$/" ng-model="authcode" required>
+          <input name="authcode" type="text" placeholder="Authorization Code" ng-pattern="/^\w+$/" ng-model="authcode" required>
         </label>
         <div class="nitpick" ng-class="(signupdialog.authcode.$viewValue.length && signupdialog.authcode.$invalid) && 'makemevisible'">
           Must be one word

@@ -23,7 +23,8 @@ var util = require ('util'),
     bcrypt = require ('bcrypt'),
     crypto = require ('crypto'),
     assert = require('assert'),
-    Q = require ('q');
+    Q = require ('q'),
+    githookurl = null;
 
 function UserInfo (u) { 
     if (!(this instanceof UserInfo))
@@ -51,9 +52,9 @@ function UserInfo (u) {
 }
 
 
-exports.Precondition = function (fs, users) {
-    console.log ("ENTERED PRECONDITION");
+exports.setup = function (fs, users, port, hostname) {
     var pw = 'foo'; // crypto.randomBytes(12).toString('hex');
+    githookurl = 'http://' + hostname + ':' + port + '/launchrun'
     users.Q.findOne ({_id: 'admin'})
     	.then (function (doc) {
 		return (doc !== null) ? doc : users.Q.insert (new UserInfo ({username: 'admin', pw: pw, fullname: 'Administrator', roles: ['root', 'admin', 'developer'], state: 'signedup'}));
@@ -70,15 +71,13 @@ exports.Precondition = function (fs, users) {
 }
 
 
-exports.SetupHandlers = function (connectionerror, socket, session, users) {
+exports.main = function (connectionerror, socket, session, users) {
 
     var seqno = 42;
 
     socket.emit('info', { site_title: 'HPC Control Center'});
-    if (typeof session !== "undefined" && typeof session.userinfo !== "undefined") {
-	console.log ("Emitting signin_granted with username: <" + session.userinfo.username + ">");
+    if (typeof session !== "undefined" && typeof session.userinfo !== "undefined")
 	socket.emit ('signin_granted', session.userinfo);
-    }
 
     function EmitError (e) {
 	console.log ("EmitError called: " + e.toString());
@@ -172,8 +171,8 @@ exports.SetupHandlers = function (connectionerror, socket, session, users) {
 		        throw new Error ('Username <' + theuser.username + '> already exists. Pick another username');
 		    return users.Q.insert (new UserInfo ({username: theuser.username, authcode: crypto.randomBytes(12).toString('hex')}));
 		})
-	    .then (function (doc) {
-		    socket.emit ('adduser_granted', {username: doc._id, authcode: doc.authcode});
+	    .then (function () {
+		    socket.emit ('adduser_granted', {username: theuser.username});
 		    SendUserList();
 		})
 	    .fail (EmitError)
@@ -240,38 +239,62 @@ exports.SetupHandlers = function (connectionerror, socket, session, users) {
 	    .then (function (doc) {
 		    if (doc === null)
 		        throw new Error ("Could not find user <" + session.userinfo.username + ">");
+		    console.log ('Setting up info for getprojectlist_granted');
+		    console.dir (doc.userinfo);
 		    socket.emit ('getprojectlist_granted', doc.userinfo.projects);
 		})
 	    .fail (EmitError)
 	    .done ();
     }
 
-/*
+
     socket.on ('addproject', function (theproject) {
 	console.log ('ADDPROJECT  projectname <' + theproject.projectname + '>');
         Q.fcall (BarfIfNotDeveloper)
 	    .then (function () {
-	            return users.Q.findOne ({_id: theproject.username});
+	            return users.Q.findOne ({_id: session.userinfo.username});
 		})
 	    .then (function (doc) {
-	            if (doc === null)
-		        throw new Error ('Username <' + theproject.username + '> could not be found');
+	            if (doc === null)	// Should we forcbily logout the user under such situations?
+		        throw new Error ('Username <' + session.userinfo.username + '> could not be found');
 		    doc.userinfo.projects.forEach (function (p) {
 		            if (p.projectname === theproject.projectname)
 			        throw new Error ('Projectname <' + theproject.projectname + '> already exists in your portfolio. Pick another name');
 		        });
-		    doc.userinfo.projects.unshift ({projectname: theproject.projectname, githook: crypto.randomBytes(12).toString('hex')});
-		    return users.Q.update ({_id: theproject.username}, doc);
+		    var githook = githookurl + '?user=' + session.userinfo.username + '&project=' + theproject.projectname + '&key=' + crypto.randomBytes(12).toString('hex')
+		    doc.userinfo.projects.unshift ({projectname: theproject.projectname, githook: githook});
+		    return users.Q.update ({_id: session.userinfo.username}, doc);
 		})
-	    .then (function (doc) {
+	    .then (function () {
 		    socket.emit ('addproject_granted', {projectname: theproject.projectname});
 		    SendProjectList(theproject.projectname);
 		})
 	    .fail (EmitError)
 	    .done ();
 	});
-*/
+
+
+    socket.on ('deleteproject', function (theproject) {
+	console.log ('DELETEPROJECT  projectname <' + theproject.projectname + '>');
+        Q.fcall (BarfIfNotDeveloper)
+	    .then (function () {
+	            return users.Q.findOne ({_id: session.userinfo.username});
+		})
+	    .then (function (doc) {
+	            if (doc === null)
+		        throw new Error ('Username <' + session.userinfo.username + '> does not exist.');
+		    if (doc.userinfo.projects.some (function (p) { return (p.projectname === theproject.projectname); }))
+			return users.Q.update ({_id: session.userinfo.username}, {$pull: {'userinfo.projects': {'projectname': theproject.projectname}}});
+		    else
+			throw new Error ('Projectname <' + theproject.projectname + '> was not found in your portfolio.');
+		})
+	    .then (function (n) {
+		    if (n === 0)
+		        throw new Error ('Something has gone kaput. We tried but could not delete project <' + theproject.projectname + '>');
+		    else
+			socket.emit ('deleteproject_granted', {theproject: theproject.projectname});
+		})
+	    .fail (EmitError)
+	    .done (SendProjectList);
+	});
 }
-
-
-//  socket.emit ("deleteproject", {projectname: u.projectname});

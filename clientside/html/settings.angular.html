@@ -1,0 +1,64 @@
+<div class="row">
+
+  <div class="span5">
+    <div class="form-signin">
+      <h2 class="form-signin-heading">Make changes to:</h2>
+      <ul class="nav nav-tabs nav-stacked">
+      <li ng-click="change_name=true;  change_pw=false;  change_email=false">	<a href=''>My name </a></li>
+      <li ng-click="change_name=false; change_pw=true;   change_email=false"> 	<a href=''>My password </a></li>
+      <li ng-click="change_name=false; change_pw=false;  change_email=true">	<a href=''> My e-mail address </a></li>
+      </ul> 
+
+    </div>
+  </div>
+
+  <div class="span5" ng-show="change_name">
+    <div class="form-signin">
+      <form name="zchangedialog" novalidate ng-submit="MakeChange()">
+	<div>
+	  <label class="control-label">Full Name <br>
+	    <input name="fullname" type="text" placeholder="Full name" ng-model="fullname" required>
+	  </label>
+	</div>
+	<input type="submit" class="btn btn-large btn-primary" ng-disabled="zchangedialog.$invalid" value="Make the change">
+      </form>
+    </div>
+  </div>
+
+
+  <div class="span5" ng-show="change_pw">
+    <div class="form-signin">
+      <form name="changedialog" novalidate ng-submit="MakeChange()">
+	<div>
+	  <label class="control-label">Current password <br>
+	    <input name="password" type="password" placeholder="Current password" ng-model="currentpassword" required>
+	  </label> <br>
+	  <label class="control-label">New password <br>
+	    <input name="newpassword" type="password" placeholder="New password" ng-pattern="/^(?=.*[^a-zA-Z])(?=.*[a-z])(?=.*[A-Z])\S{8,}$/" ng-model="newpassword" required>
+	  </label>
+	  <div class="nitpick" ng-class="(changedialog.newpassword.$viewValue.length && changedialog.newpassword.$invalid) && 'makemevisible'">
+	      Password must have no whitespace and at least:
+	      <ul>
+		<li ng-class="(changedialog.newpassword.$viewValue.search('[^a-zA-Z]') != -1) && 'nonit'"> One <strong>number or special character</strong></li>
+		<li ng-class="(changedialog.newpassword.$viewValue.search('[a-z]') != -1) && 'nonit'">     One <strong>lower case letter</strong></li>
+		<li ng-class="(changedialog.newpassword.$viewValue.search('[A-Z]') != -1) && 'nonit'">     One <strong>upper case letter</strong></li>
+		<li ng-class="(changedialog.newpassword.$viewValue.length >= 8) && 'nonit'">               <strong>Eight</strong> characters</li>
+	      </ul>
+	  </div>
+	<div>
+
+	<div>
+	  <label class="control-label">Re-enter new password <br>
+	    <input name="password2" type="password" placeholder="Re-enter password" ng-model="password2" required>
+	  </label>
+	  <div class="nitpick" ng-class="changedialog.password2.$viewValue.length && (changedialog.newpassword.$viewValue != changedialog.password2.$viewValue) && 'makemevisible'">
+	      Passwords must match
+	  </div>
+	<div>
+	<br>
+	<input type="submit" class="btn btn-large btn-primary" ng-disabled="changedialog.$invalid" value="Make the change">
+      </form>
+    </div>
+  </div>
+
+</div> 

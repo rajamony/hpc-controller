@@ -3,10 +3,11 @@
   <div class="span4">
     <div class="form-signin">
       <form name="adduserdialog" novalidate ng-submit="AddUser()">
-          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w*[^ ]$/" ng-model="username" required>
+          <input name="username" type="text" placeholder="Username" ng-pattern="/^\w+$/" ng-model="username" required>
           <div class="nitpick" ng-class="(adduserdialog.username.$viewValue.length && adduserdialog.username.$invalid) && 'makemevisible'">
   	  Need one word, at most 32 characters
           </div>
+	<br>
         <input type="submit" class="btn btn-primary" ng-disabled="adduserdialog.$invalid" value="Add new user">
       </form>
     </div>
