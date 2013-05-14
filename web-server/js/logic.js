@@ -305,3 +305,7 @@ exports.launchrun = function (req, res) {
             res.end();
 	});
 }
+
+exports.exitnow = function (req, res) {
+    console.log ("Got an exit now but doing nothing");
+}

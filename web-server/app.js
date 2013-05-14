@@ -31,7 +31,7 @@ var 	util = require ('util'),
 	cookieParser = express.cookieParser(SITE_SECRET),
 	app = express(),
     	ssl_options = { key: fs.readFileSync('/opt/keys/root-ca.key'), cert: fs.readFileSync('/opt/keys/cert.pem')},
-    	server = require('http').createServer (app), // require('https').createServer (ssl_options, app),
+    	server = require('https').createServer (ssl_options, app), // require('http').createServer (app),
     	io = require('socket.io').listen(server, {'log level': 1}),
 	users = (require('./js/monkwithq')('mongodb://localhost:27017/hpc')).get('users'),	// Wraps guille's Monk with Q's promises
 	sessionstore = new ((require('connect-mongo'))(express))({auto_reconnect: true, url: 'mongodb://localhost:27017/hpc/sessionstore', stringify: true, /* clear_interval: -1, */ }),
@@ -50,6 +50,7 @@ app.use (express.session({cookie: {maxAge: new Date(Date.now() + 10*365*86400*10
 app.use (express.favicon());
 app.use (app.router);	// I still don't understand wtf this does. http://tinyurl.com/afab75h is not entirely correct
 app.get ('/launchrun?*', logic.launchrun);
+app.get ('/exitnow?*', logic.exitnow);
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
 
