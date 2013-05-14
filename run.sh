@@ -13,7 +13,7 @@ if [ ! -d $SSLKEYDIR ]; then
     exit 1
 fi
 
-if [ ! -e $SSLKEYDIR/cert.pem || ! -e $SSLKEYDIR/root-ca.key ]; then
+if [ ! -e $SSLKEYDIR/cert.pem -o ! -e $SSLKEYDIR/root-ca.key ]; then
     echo "Setting up SSL certificates for https access"
     rm -f $SSLKEYDIR/cert.pem $SSLKEYDIR/root-ca.key
     openssl genrsa -out $SSLKEYDIR/root-ca.key
