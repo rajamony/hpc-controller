@@ -306,3 +306,18 @@ exports.launchrun = function (req, res) {
 	});
 }
 
+
+exports.exitnow = function (req, res) {
+    var str = "";
+    if (typeof req.query.markerfile !== "undefined") {
+	str = 'Got an exit command at ' + new Date();
+	require('fs').writeFileSync (req.query.markerfile, str);
+	res.end (str);
+	setTimeout (process.exit, 1000);
+    }
+    else {
+	str = "Could not determine filename " + req.url;
+	console.error (str);
+	res.end (str);
+    }
+};
