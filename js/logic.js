@@ -73,15 +73,13 @@ exports.setup = function (fs, users, port, hostname) {
 
 exports.main = function (connectionerror, socket, session, users) {
 
-    var seqno = 42;
-
     socket.emit('info', { site_title: 'HPC Control Center'});
     if (typeof session !== "undefined" && typeof session.userinfo !== "undefined")
 	socket.emit ('signin_granted', session.userinfo);
 
     function EmitError (e) {
 	console.log ("EmitError called: " + e.toString());
-        socket.emit ('error', {seqno: seqno++, message: e.toString()});
+        socket.emit ('error', {message: e.toString()});
     }
 
     function BarfIfNotSignedIn () {
@@ -108,9 +106,7 @@ exports.main = function (connectionerror, socket, session, users) {
     }
 
 
-
     socket.on ('signin', function (signin) {
-	    console.log ('SIGNIN  username <' + signin.username + '> password <' + signin.password + '>');
 	    Q.fcall (BarfIfNoSession)
 	        .then (function () {
 			return users.Q.findOne ({_id: signin.username});
@@ -144,13 +140,11 @@ exports.main = function (connectionerror, socket, session, users) {
 
     socket.on ('getuserlist', SendUserList);
     function SendUserList () {
-	console.log ('ADMINISTRATE  current session user-data:' + util.inspect (session.userinfo, {colors: true}));
         Q.fcall (BarfIfNotAdmin)
 	    .then (function () {
 		    return users.Q.find ({_id: {$ne: 'admin'}});
 		})
 	    .then (function (doc) {
-		    console.log ('SENDUSERLIST SUCCESSFUL doc: <' + util.inspect (doc, {colors: true}) + '>');
 		    var userlist = [];
 		    doc.forEach (function (u) {userlist.push (u.userinfo);});
 		    socket.emit ('getuserlist_granted', userlist);
@@ -161,9 +155,9 @@ exports.main = function (connectionerror, socket, session, users) {
 
 
     socket.on ('adduser', function (theuser) {
-	console.log ('ADDUSER  username <' + theuser.username + '> current session user-data:' + util.inspect (session.userinfo, {colors: true}));
         Q.fcall (BarfIfNotAdmin)
 	    .then (function () {
+		    console.log ('ADDUSER  username <' + theuser.username + '>');
 	            return users.Q.findOne ({_id: theuser.username});
 		})
 	    .then (function (doc) {
@@ -181,9 +175,9 @@ exports.main = function (connectionerror, socket, session, users) {
 
 
     socket.on ('deleteuser', function (theuser) {
-	console.log ('DELETEUSER  username <' + theuser.username + '>');
         Q.fcall (BarfIfNotAdmin)
 	    .then (function () {
+		    console.log ('DELETEUSER  username <' + theuser.username + '>');
 	            return users.Q.findOne ({_id: theuser.username});
 		})
 	    .then (function (doc) {
@@ -193,7 +187,7 @@ exports.main = function (connectionerror, socket, session, users) {
 		        throw new Error ('You cannot remove the root admin account');
 		    return users.Q.remove ({_id: theuser.username});
 		})
-	    .then (function (doc) {
+	    .then (function () {
 		    socket.emit ('deleteuser_granted', {username: theuser.username});
 		    SendUserList();
 		})
@@ -239,8 +233,6 @@ exports.main = function (connectionerror, socket, session, users) {
 	    .then (function (doc) {
 		    if (doc === null)
 		        throw new Error ("Could not find user <" + session.userinfo.username + ">");
-		    console.log ('Setting up info for getprojectlist_granted');
-		    console.dir (doc.userinfo);
 		    socket.emit ('getprojectlist_granted', doc.userinfo.projects);
 		})
 	    .fail (EmitError)
@@ -257,13 +249,13 @@ exports.main = function (connectionerror, socket, session, users) {
 	    .then (function (doc) {
 	            if (doc === null)	// Should we forcbily logout the user under such situations?
 		        throw new Error ('Username <' + session.userinfo.username + '> could not be found');
-		    doc.userinfo.projects.forEach (function (p) {
-		            if (p.projectname === theproject.projectname)
-			        throw new Error ('Projectname <' + theproject.projectname + '> already exists in your portfolio. Pick another name');
-		        });
-		    var githook = githookurl + '?user=' + session.userinfo.username + '&project=' + theproject.projectname + '&key=' + crypto.randomBytes(12).toString('hex')
-		    doc.userinfo.projects.unshift ({projectname: theproject.projectname, githook: githook});
-		    return users.Q.update ({_id: session.userinfo.username}, doc);
+		    if (doc.userinfo.projects.some (function (p) { return (p.projectname === theproject.projectname)}))
+			throw new Error ('Projectname <' + theproject.projectname + '> already exists in your portfolio. Pick another name');
+		    else {
+			var githook = githookurl + '?user=' + session.userinfo.username + '&project=' + theproject.projectname + '&key=' + crypto.randomBytes(12).toString('hex')
+			doc.userinfo.projects.unshift ({projectname: theproject.projectname, githook: githook});
+			return users.Q.update ({_id: session.userinfo.username}, doc);
+		    }
 		})
 	    .then (function () {
 		    socket.emit ('addproject_granted', {projectname: theproject.projectname});
@@ -275,7 +267,6 @@ exports.main = function (connectionerror, socket, session, users) {
 
 
     socket.on ('deleteproject', function (theproject) {
-	console.log ('DELETEPROJECT  projectname <' + theproject.projectname + '>');
         Q.fcall (BarfIfNotDeveloper)
 	    .then (function () {
 	            return users.Q.findOne ({_id: session.userinfo.username});
@@ -296,5 +287,21 @@ exports.main = function (connectionerror, socket, session, users) {
 		})
 	    .fail (EmitError)
 	    .done (SendProjectList);
+	});
+}
+
+var spawn = require ('child_process').spawn;
+
+exports.launchrun = function (req, res) {
+    console.log (req.query);
+    junk = spawn ('ls', ['-lrt', '.', 'asdadasd', '..']);
+
+    function appendtoResponse (data) {
+	res.write (data);
+    }
+    junk.stdout.on ('data', appendtoResponse);
+    junk.stderr.on ('data', appendtoResponse);
+    junk.on ('close', function (code) {
+            res.end();
 	});
 }
