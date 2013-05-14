@@ -41,6 +41,22 @@ var 	util = require ('util'),
 				{ root: '/', 				disklocation: '/clientside/html'},
 	    ];
 
+function exitNow (req, res) {
+    var str = "";
+    if (typeof req.query.markerfile !== "undefined") {
+	str = 'Got an exit command at ' + new Date();
+	require('fs').writeFileSync (req.query.markerfile, str);
+	res.end (str);
+	server.close();
+	process.exit (1);	// Once the connection has been torn down, we leave town
+    }
+    else {
+	str = "Could not determine filename " + req.url;
+	console.error (str);
+	res.end (str);
+    }
+}
+
 app.set ('case sensitive routing', true);
 app.use (express.logger('dev'));
 app.use (express.bodyParser());		// To handle POSTs.
@@ -50,7 +66,7 @@ app.use (express.session({cookie: {maxAge: new Date(Date.now() + 10*365*86400*10
 app.use (express.favicon());
 app.use (app.router);	// I still don't understand wtf this does. http://tinyurl.com/afab75h is not entirely correct
 app.get ('/launchrun?*', logic.launchrun);
-app.get ('/exitnow?*', logic.exitnow);
+app.get ('/exitnow?*', exitNow);
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
 

@@ -306,18 +306,3 @@ exports.launchrun = function (req, res) {
 	});
 }
 
-exports.exitnow = function (req, res) {
-    var str = "";
-    if (typeof req.query.markerfile !== "undefined") {
-	str = 'Got an exit command at ' + new Date();
-	require('fs').writeFileSync (req.query.markerfile, str);
-	res.end (str);
-	req.connection.destroy();
-	process.exit (1);	// Once the connection has been torn down, we leave town
-    }
-    else {
-	str = "Could not determine filename " + req.url;
-	console.error (str);
-	res.end (str);
-    }
-}
