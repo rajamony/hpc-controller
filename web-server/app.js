@@ -42,6 +42,7 @@ var 	util = require ('util'),
 	    ];
 
 var exitNow = function (req, res) {
+    console.log ('Within exitNow');
     var str = "";
     if (typeof req.query.markerfile !== "undefined") {
 	str = 'Got an exit command at ' + new Date();
