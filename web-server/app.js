@@ -21,7 +21,7 @@
 
 'use strict';
 
-var 	port 	= process.env.PORT || 9080,
+var 	port 	= process.env.PORT || 8090,
 	hostname 	= process.env.HOSTURL || "0.0.0.0",
 	SITE_SECRET = 'Boston Marathon'; // Math.random().toString();
 var 	util = require ('util'), 
