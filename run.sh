@@ -39,5 +39,13 @@ mongod --smallfiles --dbpath $MONGODATABASEDIR --quiet >& $MONGOOUTFILE &
 ## then request the webserver to exit (via an HTTP GET to /exitnow)
 
 while true; do
-    (cd $WEBSERVERDIR; node $WEBSERVER)
+    starttime=`date +%s`
+    for ((i=0;i<3;i++)); do
+	(cd $WEBSERVERDIR; node $WEBSERVER)
+    done
+    endtime=`date +%s`
+    if (( $endtime-$starttime < 10 )); then
+        echo "Something has gone awry with the server. Fix and re-run. Exiting server loop"
+	break
+    fi
 done
