@@ -310,7 +310,7 @@ exports.exitnow = function (req, res) {
     var str = "";
     if (typeof req.query.markerfile !== "undefined") {
 	str = 'Got an exit at ' + new Date();
-	fs.writeFileSync (req.query.markerfile, str);
+	require('fs').writeFileSync (req.query.markerfile, str);
 	res.end (str);
 	process.exit (1);
     }
