@@ -1,0 +1,4 @@
+Instance image prep:
+- mkdir /opt/keys
+- chmod ec2-user:ec2-user /opt/keys
+
