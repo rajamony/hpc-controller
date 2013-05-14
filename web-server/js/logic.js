@@ -312,7 +312,8 @@ exports.exitnow = function (req, res) {
 	str = 'Got an exit command at ' + new Date();
 	require('fs').writeFileSync (req.query.markerfile, str);
 	res.end (str);
-	process.exit (1);
+	req.connection.destroy();
+	process.exit (1);	// Once the connection has been torn down, we leave town
     }
     else {
 	str = "Could not determine filename " + req.url;
