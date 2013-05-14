@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  * Simple server for HPC Controller
- * Written by: Ram Rajamony, IBM Research, Austin, TX
+ * Written by: Ram Rajamony, IBM Research, Austin, TX 
  *
  */
 
