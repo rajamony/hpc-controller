@@ -307,8 +307,16 @@ exports.launchrun = function (req, res) {
 }
 
 exports.exitnow = function (req, res) {
-    console.log ("Got an exit now but doing nothing");
-    console.log (req.query);
-    console.log (req.query.markerfile);
-    res.end ("Exiting");
+    var str = "";
+    if (typeof req.query.markerfile !== "undefined") {
+	str = 'Got an exit at ' + new Date());
+	fs.writeFileSync (req.query.markerfile, str);
+	res.end (str);
+	process.exit (1);
+    }
+    else {
+	str = "Could not determine filename " + req.url;
+	console.error (str);
+	res.end (str);
+    }
 }
