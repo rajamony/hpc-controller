@@ -45,7 +45,9 @@ fi
 while true; do
     starttime=`date +%s`
     for ((i=0;i<3;i++)); do
-	(cd $WEBSERVERDIR; make >& $WEBSERVEROUTFILE)
+	rm -f $MARKERFILE
+	(cd $WEBSERVERDIR; make >& $WEBSERVEROUTFILE &)
+	while [ -e $MARKERFILE ]; do sleep 1; done
     done
     endtime=`date +%s`
     if (( $endtime-$starttime < 15 )); then

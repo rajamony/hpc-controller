@@ -308,4 +308,7 @@ exports.launchrun = function (req, res) {
 
 exports.exitnow = function (req, res) {
     console.log ("Got an exit now but doing nothing");
+    console.log (req.params);
+    console.log (req.params.markerfile);
+    res.end ("Exiting");
 }
