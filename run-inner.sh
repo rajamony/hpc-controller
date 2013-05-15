@@ -42,16 +42,11 @@ fi
 ## has been set up (on the server repo) that will do a git pull of the code and 
 ## then request the webserver to exit (via an HTTP GET to /exitnow)
 
-while true; do
-    starttime=`date +%s`
-    for ((i=0;i<3;i++)); do
-	rm -f $MARKERFILE
-	(cd $WEBSERVERDIR; make >& $WEBSERVEROUTFILE &)
-	while [ -e $MARKERFILE ]; do sleep 1; done
-    done
-    endtime=`date +%s`
-    if (( $endtime-$starttime < 15 )); then
-        echo "Something has gone awry with the server. Fix and re-run. Exiting server loop"
-	break
-    fi
+for ((i=2;i>=0;i--)); do
+    j=$(($i+1))
+    rm -f $WEBSERVEROUTFILE.$j
+    mv $WEBSERVEROUTFILE.$i $WEBSERVEROUTFILE.$j
 done
+mv $WEBSERVEROUTFILE $WEBSERVEROUTFILE.0
+(cd $WEBSERVERDIR; make >& $WEBSERVEROUTFILE)
+
