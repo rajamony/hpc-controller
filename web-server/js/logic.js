@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Main server-side logic for all socket.io calls
- * Written by: Ram Rajamony, IBM Research, Austin, TX
+ * Main logic (socket.io and GET) for doing the admin+developer interactions
+ * Written by: Ram Rajamony, IBM Research, Austin, TX.
  *
  */
 
