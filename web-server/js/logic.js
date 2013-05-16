@@ -51,13 +51,11 @@ function UserInfo (u) {
 	};
 }
 
-
-exports.setup = function (fs, users, port, hostname) {
-    var pw = 'foo'; // crypto.randomBytes(12).toString('hex');
-    githookurl = 'http://' + hostname + ':' + port + '/launchrun'
+exports.setup = function (operatingenv, fs, users) {
+    githookurl = operatingenv.githookurl;
     users.Q.findOne ({_id: 'admin'})
     	.then (function (doc) {
-		return (doc !== null) ? doc : users.Q.insert (new UserInfo ({username: 'admin', pw: pw, fullname: 'Administrator', roles: ['root', 'admin', 'developer'], state: 'signedup'}));
+		return (doc !== null) ? doc : users.Q.insert (new UserInfo ({username: 'admin', pw: operatingenv.adminpw, fullname: 'Administrator', roles: ['root', 'admin', 'developer'], state: 'signedup'}));
 	    })
 	.fail (function (err) {
 		console.log ("Setup: error is <" + err + ">");
@@ -66,7 +64,7 @@ exports.setup = function (fs, users, port, hostname) {
 	.done (function (doc) {
 		if (typeof doc === "undefined")
 		    process.exit (1);
-		console.log ("Admin account password is <" + pw + ">");
+		console.log ("Admin account password is <" + operatingenv.adminpw + ">");
 	    });
 }
 
@@ -233,6 +231,7 @@ exports.main = function (connectionerror, socket, session, users) {
 	    .then (function (doc) {
 		    if (doc === null)
 		        throw new Error ("Could not find user <" + session.userinfo.username + ">");
+		    doc.userinfo.projects.forEach (function (p) {p.githook = githookurl + p.githookparams;});
 		    socket.emit ('getprojectlist_granted', doc.userinfo.projects);
 		})
 	    .fail (EmitError)
@@ -252,8 +251,8 @@ exports.main = function (connectionerror, socket, session, users) {
 		    if (doc.userinfo.projects.some (function (p) { return (p.projectname === theproject.projectname)}))
 			throw new Error ('Projectname <' + theproject.projectname + '> already exists in your portfolio. Pick another name');
 		    else {
-			var githook = githookurl + '?user=' + session.userinfo.username + '&project=' + theproject.projectname + '&key=' + crypto.randomBytes(12).toString('hex')
-			doc.userinfo.projects.unshift ({projectname: theproject.projectname, githook: githook});
+			var githookparams = 'user=' + session.userinfo.username + '&project=' + theproject.projectname + '&key=' + crypto.randomBytes(12).toString('hex')
+			doc.userinfo.projects.unshift ({projectname: theproject.projectname, githookparams: githookparams});
 			return users.Q.update ({_id: session.userinfo.username}, doc);
 		    }
 		})

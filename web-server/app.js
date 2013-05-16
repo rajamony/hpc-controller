@@ -21,25 +21,24 @@
 
 'use strict';
 
-var 	port 	= process.env.PORT || 8090,
-	hostname 	= process.env.HOSTURL || "0.0.0.0",
-	SITE_SECRET = 'Boston Marathon'; // Math.random().toString();
-var 	util = require ('util'), 
+var 	port = process.env.PORT || 8090;
+var 	util = require ('util'),
 	fs = require ('fs'),
 	express  = require ('express'),
 	logic = require ('./js/logic.js'),
-	cookieParser = express.cookieParser(SITE_SECRET),
 	app = express(),
     	ssl_options = { key: fs.readFileSync('/opt/keys/root-ca.key'), cert: fs.readFileSync('/opt/keys/cert.pem')},
-    	server = require('https').createServer (ssl_options, app), // require('http').createServer (app),
+    	server = require('https').createServer (ssl_options, app), 
+	// server = require('http').createServer (app),
+	operatingenv = require ('./js/operatingenv.js') (server, port),
+	cookieParser = express.cookieParser(operatingenv.SITE_SECRET),
     	io = require('socket.io').listen(server, {'log level': 1}),
 	users = (require('./js/monkwithq')('mongodb://localhost:27017/hpc')).get('users'),	// Wraps guille's Monk with Q's promises
 	sessionstore = new ((require('connect-mongo'))(express))({auto_reconnect: true, url: 'mongodb://localhost:27017/hpc/sessionstore', stringify: true, /* clear_interval: -1, */ }),
-	staticurlmaps = [ 	{ root: '/html', 			disklocation: '/clientside/html'},
-				{ root: '/css', 			disklocation: '/clientside/css'},
-				{ root: '/js', 				disklocation: '/clientside/js'},
-				{ root: '/', 				disklocation: '/clientside/html'},
-	    ];
+	staticurlmaps = [ 	{ root: '/html',	disklocation: '/clientside/html'},
+				{ root: '/css', 	disklocation: '/clientside/css'},
+				{ root: '/js', 		disklocation: '/clientside/js'},
+				{ root: '/', 		disklocation: '/clientside/html'},];
 
 app.set ('case sensitive routing', true);
 app.use (express.logger('dev'));
@@ -66,5 +65,5 @@ sessionSockets.on('connection', function (err, socket, session) {
 	logic.main (err, socket, session, users);
     });
 
-logic.setup (fs, users, port, hostname);
-server.listen (port, hostname);
+logic.setup (operatingenv, fs, users);
+server.listen (port, '0.0.0.0');
