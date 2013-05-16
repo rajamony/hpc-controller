@@ -1,0 +1,47 @@
+##
+## Sample system configuration file. Edit as appropriate and place as 'system.config'
+##
+
+# Your external facing hostname. If on AWS, uncomment the next line. The localhost line is provided for local testing
+# PUBLIC_HOSTNAME = `curl http://169.254.169.254/latest/meta-data/public-hostname`
+# PUBLIC_HOSTNAME='localhost'
+
+# The following are required for the SSL key configuration (https access). Modify as appropriate
+ssl_country=US
+ssl_state=Texas
+ssl_locality=Austin
+ssl_organization="IBM Research"
+ssl_orgunit="PHM Project"
+ssl_name="yourhostname"
+ssl_email="you@you.com"
+
+
+################################################################################
+# Variables below this line ought to be left as is
+################################################################################
+
+
+# FIXME: This ought to be on S3 and not on the instance store
+MONGODATABASEDIR=./mongo-database
+
+# Where mongo will dump its output
+MONGOOUTFILE=/tmp/OUT.mongo
+
+# Where the webserver will dump its output
+WEBSERVEROUTFILE=/tmp/OUT.webserver
+
+# Directory where SSL keys will be stored. This directory must be local to the controller
+SSLKEYDIR=/opt/keys
+
+# Web server location
+WEBSERVERDIR=web-server
+
+# This file is used to detect when the web server has exited. Beware - the server-side githook also uses it
+MARKERFILE=/tmp/webserver-has-exited
+
+# Site secret (used to encrypt session cookies)
+# SITE_SECRET='your site secret here'
+
+# Admin password
+# export ADMIN_PASSWORD='???'
+
