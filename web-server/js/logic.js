@@ -51,6 +51,15 @@ function UserInfo (u) {
 	};
 }
 
+function formattednow () {
+    var now = new Date();
+    function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
+    return now.getUTCFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getUTCMonth()] + '-'
+    		+ zeropad (now.getUTCDate()) + ' '
+      		+ zeropad (now.getUTCHours()) + ':' + zeropad (now.getUTCMinutes()) + ':' + zeropad (now.getUTCSeconds()) + ' UTC';
+}
+ 
+
 exports.setup = function (operatingenv, fs, users) {
     githookurl = operatingenv.githookurl;
     users.Q.findOne ({_id: 'admin'})
@@ -71,7 +80,7 @@ exports.setup = function (operatingenv, fs, users) {
 
 exports.main = function (connectionerror, socket, session, users) {
 
-    socket.emit('info', { site_title: 'HPC Control Center'});
+    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: formattednow()});
     if (typeof session !== "undefined" && typeof session.userinfo !== "undefined")
 	socket.emit ('signin_granted', session.userinfo);
 

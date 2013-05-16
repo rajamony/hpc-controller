@@ -106,6 +106,7 @@ console.log ("MainCtrl INVOKED");
 
   socket.on('info', function (data) {
       rootscope.site_title = data.site_title;
+      rootscope.serverstarttime = data.serverstarttime;
     });
 
   socket.on ('error', function (data) {
