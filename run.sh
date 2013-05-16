@@ -14,6 +14,5 @@ while true; do
     if (( $endtime-$starttime < 15 )); then
         echo "Something has gone awry with the server. Forced sleep for 1 minute"
 	sleep 60
-	break
     fi
 done
