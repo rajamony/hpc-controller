@@ -303,7 +303,7 @@ var spawn = require ('child_process').spawn;
 exports.launchrun = function (req, res) {
     console.log (req.query);
     if (req.method === 'POST')
-        console.dir (req.params);
+        console.dir (req.body);
     junk = spawn ('ls', ['-lrt', '.', 'asdadasd', '..']);
 
     function appendtoResponse (data) {

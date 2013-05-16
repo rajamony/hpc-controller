@@ -109,5 +109,21 @@ input.management {
 }
 
 .navbar-text.greentext {
-    color: green;
+  color: green;
 }
+
+/*
+#serverstarttime {
+  background-color: rgba(228, 228, 28, 0.5); 
+  display: none;
+  -webkit-transition:display 2s;
+}
+*/
+/* Red [0-255], Green [0-255], Blue [0-255], Alpha [0-1] */
+/*
+  background-color: rgba(228, 228, 28, 0.5); 
+  -webkit-transition: background-color 1.15s;
+  -moz-transition: background-color 0.15s;
+  -o-transition: background-color 0.15s;
+  transition: background-color 0.15s;
+*/
