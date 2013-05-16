@@ -231,7 +231,7 @@ exports.main = function (connectionerror, socket, session, users) {
 	    .then (function (doc) {
 		    if (doc === null)
 		        throw new Error ("Could not find user <" + session.userinfo.username + ">");
-		    doc.userinfo.projects.forEach (function (p) {p.githook = githookurl + p.githookparams;});
+		    doc.userinfo.projects.forEach (function (p) {p.githook = githookurl + '?' + p.githookparams;});
 		    socket.emit ('getprojectlist_granted', doc.userinfo.projects);
 		})
 	    .fail (EmitError)
