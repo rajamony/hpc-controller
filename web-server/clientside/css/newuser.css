@@ -107,3 +107,7 @@ input.management {
   text-align: center;
   width: 100px;
 }
+
+.navbar-text.greentext {
+    color: green;
+}

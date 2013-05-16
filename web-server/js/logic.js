@@ -24,7 +24,8 @@ var util = require ('util'),
     crypto = require ('crypto'),
     assert = require('assert'),
     Q = require ('q'),
-    githookurl = null;
+    githookurl = null,
+    serverstarttime = formattedtime(new Date());
 
 function UserInfo (u) { 
     if (!(this instanceof UserInfo))
@@ -51,8 +52,7 @@ function UserInfo (u) {
 	};
 }
 
-function formattednow () {
-    var now = new Date();
+function formattedtime (now) {
     function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
     return now.getUTCFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getUTCMonth()] + '-'
     		+ zeropad (now.getUTCDate()) + ' '
@@ -80,7 +80,7 @@ exports.setup = function (operatingenv, fs, users) {
 
 exports.main = function (connectionerror, socket, session, users) {
 
-    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: formattednow()});
+    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: serverstarttime});
     if (typeof session !== "undefined" && typeof session.userinfo !== "undefined")
 	socket.emit ('signin_granted', session.userinfo);
 
