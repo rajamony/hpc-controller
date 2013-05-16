@@ -23,17 +23,17 @@ if [ ! -e $SSLKEYDIR/cert.pem -o ! -e $SSLKEYDIR/root-ca.key ]; then
     rm -f /tmp/csr.pem.$$
 fi
 
-# ##
-# ## Setup Mongo and start it
-# ##
-# mkdir -p $MONGODATABASEDIR	# In case this is the first time ever we are running this 
-# 
-# /etc/init.d/mongod status 2> /dev/null | grep --silent "^mongod (.*) is running..."
-# if [ $? -ne 0 ]; then 
-#     echo "Starting mongod ..."
-#     rm -f $MONGOOUTFILE
-#     mongod --smallfiles --dbpath $MONGODATABASEDIR --quiet >& $MONGOOUTFILE &
-# fi
+##
+## Setup Mongo and start it
+##
+mkdir -p $MONGODATABASEDIR	# In case this is the first time ever we are running this 
+
+/etc/init.d/mongod status 2> /dev/null | grep --silent "^mongod (.*) is running..."
+if [ $? -ne 0 ]; then 
+    echo "Starting mongod ..."
+    rm -f $MONGOOUTFILE
+    mongod --smallfiles --dbpath $MONGODATABASEDIR --quiet >& $MONGOOUTFILE &
+fi
 
 
 ##
