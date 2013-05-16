@@ -307,17 +307,6 @@ exports.launchrun = function (req, res) {
 
 
 exports.exitnow = function (req, res) {
-    var str = "";
-    if (typeof req.query.markerfile !== 'undefined') {
-	str = 'Got an exit command at ' + new Date();
-	require('fs').writeFileSync (req.query.markerfile, str);
-	res.write (JSON.stringify(req.connection));
-	res.end (str);
-	setTimeout (process.exit, 1000);
-    }
-    else {
-	str = "Could not determine marker filename " + req.url;
-	console.error (str);
-	res.end (str);
-    }
+    res.end ('Got an exit command at ' + new Date());
+    setTimeout (process.exit, 1000);	// An inelegant way of making sure the response is received before the server dies
 };
