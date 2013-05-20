@@ -5,11 +5,12 @@ var globsocket;
 // Declare app level module which depends on filters, and services
 var app = angular.module('myApp', [])
   .config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-    $routeProvider.when('/administer',	{templateUrl: '/html/admin.angular.html', 	controller: AdministerCtrl});
-    $routeProvider.when('/', 		{templateUrl: '/html/login.angular.html', 	controller: FrontDoorCtrl});
+    $routeProvider.when('/administer',	                {templateUrl: '/html/admin.angular.html', 	  controller: AdministerCtrl});
+    $routeProvider.when('/', 		                {templateUrl: '/html/login.angular.html', 	  controller: FrontDoorCtrl});
+    $routeProvider.when('/develop', 	                {templateUrl: '/html/develop.angular.html', 	  controller: DevelopCtrl});
+    $routeProvider.when('/settings', 	                {templateUrl: '/html/settings.angular.html',	  controller: SettingsCtrl});
+    $routeProvider.when('/projectstatus/:projectname',  {templateUrl: '/html/projectstatus.angular.html', controller: ProjectStatusCtrl});
 //  Access a property foo in the $routeProvider argument as $route.current.foo
-    $routeProvider.when('/develop', 	{templateUrl: '/html/develop.angular.html', 	controller: DevelopCtrl});
-    $routeProvider.when('/settings', 	{templateUrl: '/html/settings.angular.html',	controller: SettingsCtrl});
 
     $routeProvider.otherwise({redirectTo: '/'});
 //  $locationProvider.html5Mode(true);
@@ -275,9 +276,9 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
     });
 
   socket.on ('projectupdate', function (u) {
-      var msg = 'Project <' + u.projectname + '> updated on branch <' + u.updatebranch + '> by ' + u.updater + ' at ' + u.updatetime;
-      $scope.projectactivity.unshift (msg); 
-      console.log ('Project update: ' + u);
+      var update = {name: u.projectname, statusmsg: 'Project <' + u.projectname + '> updated on branch <' + u.updatebranch + '> by ' + u.updater + ' at ' + u.updatetime};
+      $scope.projectactivity.unshift (update); 
+      console.log ('Project update: ' + update.statusmsg);
     });
 }
 
@@ -286,4 +287,16 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
  */
 SettingsCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function SettingsCtrl ($scope, $location, wrappedsocket, rootscope) {
+}
+
+/**
+ * ProjectStatusCtrl: support for developers to work with a specific project update.
+ * Here is where I expect a developer to spend the brunt of their time
+ */
+ProjectStatusCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope', '$routeParams'];
+function ProjectStatusCtrl ($scope, $location, wrappedsocket, rootscope, routeparams) {
+  $scope.projectname = routeparams.projectname;
+  var socket = wrappedsocket ($scope);
+
+  socket.emit ("getprojectstatus", {projectname: $scope.projectname});
 }

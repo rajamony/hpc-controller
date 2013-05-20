@@ -62,6 +62,7 @@
 }
 
 .makemevisible {
+  z-index: 10;		/* Arise and display over everything else you varmint */
   display: inline;
   position: absolute;
   margin-left: 9px;
