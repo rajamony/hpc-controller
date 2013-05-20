@@ -27,9 +27,9 @@ function returnEnv (server, port) {
     }
     operatingenv.SITE_SECRET = process.env.SITE_SECRET;
     operatingenv.adminpw = process.env.ADMIN_PASSWORD;
-    var hostname = process.env.PUBLIC_HOSTNAME;
-    var protocol = server.hasOwnProperty('cert')?'https://':'http://';
-    operatingenv.githookurl = protocol + hostname + ':' + port + '/launchrun';
+    operatingenv.protocol = server.hasOwnProperty('cert')?'https://':'http://';
+    operatingenv.hostname = process.env.PUBLIC_HOSTNAME;
+    operatingenv.githookurl = operatingenv.protocol + operatingenv.hostname + ':' + port + '/launchrun';
     return operatingenv;
 }
 

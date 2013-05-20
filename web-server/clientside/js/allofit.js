@@ -106,12 +106,20 @@ console.log ("MainCtrl INVOKED");
 
   socket.on('info', function (data) {
       rootscope.site_title = data.site_title;
+      rootscope.site_hostname = data.site_hostname;
       rootscope.serverstarttime = data.serverstarttime;
     });
 
   socket.on ('error', function (data) {
       console.log ("Got an error: [" + data.seqno + "] " + data.message);
       rootscope.error.push (data.message);
+    });
+
+  socket.on ('forced_logout', function () {
+      console.log ("You've logged out elsewhere. Kicking you out here too");
+      rootscope.ClearErrors();
+      rootscope.UnsetUser();
+      $location.path ('/');
     });
 
   /**
@@ -221,6 +229,7 @@ function AdministerCtrl ($scope, $location, wrappedsocket, rootscope) {
 DevelopCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numprojectstoactupon = 0;
+  $scope.projectactivity = [];
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getprojectlist", {});
@@ -255,6 +264,11 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.on ("addproject_granted", function (u) {
       console.log ('Project added: ' + JSON.stringify(u));
+    });
+
+  socket.on ('projectupdate', function (u) {
+      $scope.projectactivity.unshift (u); 
+      console.log ('Project update: ' + u);
     });
 }
 

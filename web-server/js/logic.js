@@ -24,8 +24,10 @@ var util = require ('util'),
     crypto = require ('crypto'),
     assert = require('assert'),
     Q = require ('q'),
-    githookurl = null,
-    serverstarttime = formattedtime(new Date());
+    operatingenv = null,
+    serverstarttime = formattedtime(new Date()),
+    forcelogout = {},		// So we can forcibly log out a user
+    activeusers = {};		// To keep track of the various socket endpoints for a specific user
 
 function UserInfo (u) { 
     if (!(this instanceof UserInfo))
@@ -60,8 +62,16 @@ function formattedtime (now) {
 }
  
 
-exports.setup = function (operatingenv, fs, users) {
-    githookurl = operatingenv.githookurl;
+function removeElement (arr, elem) {
+    for (var i = 0; i < arr.length; i++) {
+	if (arr[i] === elem)
+	    arr.splice (i, 1);
+    }
+}
+
+
+exports.setup = function (myenv, fs, users) {
+    operatingenv = myenv;
     users.Q.findOne ({_id: 'admin'})
     	.then (function (doc) {
 		return (doc !== null) ? doc : users.Q.insert (new UserInfo ({username: 'admin', pw: operatingenv.adminpw, fullname: 'Administrator', roles: ['root', 'admin', 'developer'], state: 'signedup'}));
@@ -78,26 +88,38 @@ exports.setup = function (operatingenv, fs, users) {
 }
 
 
-exports.main = function (connectionerror, socket, session, users) {
+function setExceptionHandling (socket) {
+    var realon = socket.on;
+    socket.on = function (event, fn) {
+	    realon.call (socket, event, function () {
+		try {
+		    fn.apply (socket, arguments);
+		}
+		catch (e) {
+		    console.error ('Uncaught error' + e.toString() + '\n' + e.stack);
+		}
+	    });
+    }
+}
 
-    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: serverstarttime});
-    if (typeof session !== "undefined" && typeof session.userinfo !== "undefined")
-	socket.emit ('signin_granted', session.userinfo);
+exports.main = function (io, sessionSockets, connectionerror, socket, session, users) {
 
     function EmitError (e) {
-	console.log ("EmitError called: " + e.toString());
+	console.log ("EmitError called: " + e.toString() + '\n' + e.stack);
         socket.emit ('error', {message: e.toString()});
+    }
+
+    function BarfIfNoSession () {
+    	if (connectionerror !== null || session === null) 
+	    throw new Error ('No session established. Cookies are likely disabled on your end');
     }
 
     function BarfIfNotSignedIn () {
     	BarfIfNoSession(); 
 	if (typeof session.userinfo === "undefined") 
 	    throw new Error ('You are not logged in');
-    }
-
-    function BarfIfNoSession () {
-    	if (connectionerror !== null || session === null) 
-	    throw new Error ('No session established. Cookies are likely disabled on your end');
+        if (typeof forcelogout[session.userinfo.username] !== 'undefined')
+	    throw new Error ('You have been forcibly logged out elsewhere. Log back in to use the system');
     }
 
     function BarfIfNotAdmin () {
@@ -112,6 +134,46 @@ exports.main = function (connectionerror, socket, session, users) {
 	    throw new Error ('Only users with the developer role can perform this operation (this error should not happen)');
     }
 
+    function removeUsersSocket (username, socket) {
+	console.log ("    Removing socket from user's list of sockets");
+	removeElement (activeusers[username], socket);
+	if (activeusers[username].length === 0)
+	    delete activeusers[username];
+    }
+
+    function signInUser (socket, userinfo) {
+	socket.emit ('signin_granted', userinfo);
+	if (typeof activeusers[userinfo.username] === 'undefined')	// We are the first socket for this user
+	    activeusers[userinfo.username] = [];
+        activeusers[userinfo.username].push (socket);	// We will now track this user as they come in over multiple devices
+    }
+
+
+    /*
+     *	Function declarations are over, the real work begins
+     */
+
+    setExceptionHandling (socket);
+    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: serverstarttime, site_hostname: operatingenv.hostname});  // All see this
+    if (typeof session !== "undefined" && typeof session.userinfo !== "undefined") {
+	if (typeof forcelogout[session.userinfo.username] === 'undefined') 
+	    signInUser (socket, session.userinfo);
+	else {
+	    delete session.userinfo; 	// They logged out on a different session, so don't let them come in here
+	    session.save();
+	}
+    }
+
+    socket.on ('disconnect', function () {	// Don't send this socket any more notifications
+    	    Q.fcall (BarfIfNotSignedIn)
+	    .then (function (/* session.userinfo is now valid */) {
+		    console.log ('Got a disconnect for user <' + session.userinfo.username + '>');
+		    if (typeof activeusers[session.userinfo.username] !== 'undefined')
+			removeUsersSocket (session.userinfo.username, socket);
+		})
+	    .fail(console.log /* its a disconnect, so ignore the Errors thrown from BarfIfNotSignedIn */)
+	    .done();
+	});
 
     socket.on ('signin', function (signin) {
 	    Q.fcall (BarfIfNoSession)
@@ -122,10 +184,12 @@ exports.main = function (connectionerror, socket, session, users) {
 			if ((doc === null) || ! bcrypt.compareSync (signin.password, doc.bcrypted_password))
 			    throw new Error ('Invalid account/password');
 			else { 
-			    console.log ('SIGNIN SUCCESSFUL doc: <' + util.inspect (doc.userinfo, {colors: true}) + '>');
+			    console.log ('SIGNIN SUCCESSFUL for user <' + doc.userinfo.username + '>');
 			    session.userinfo = doc.userinfo;
 			    session.save();
-			    socket.emit ('signin_granted', doc.userinfo);
+			    signInUser (socket, doc.userinfo);
+			    if (typeof forcelogout[session.userinfo.username] !== 'undefined')	// Make sure the user will no longer be forcibly logged out
+				delete forcelogout[session.userinfo.username];
 			}
 		    })
 	        .fail (EmitError)
@@ -133,10 +197,21 @@ exports.main = function (connectionerror, socket, session, users) {
 	});
 
 
+    function broadcastToUsersSockets (username, event, data) {
+	if (typeof activeusers[username] !== 'undefined')
+	    activeusers[username].forEach (function (socket) { socket.emit (event, data); });
+    }
+
     socket.on ('signout', function () {
 	    Q.fcall (BarfIfNotSignedIn)
-	        .then (function () {
+	        .then (function (/* session.userinfo is now valid */) {
 			console.log ('SIGNOUT  username <' + session.userinfo.username + '>');
+			removeUsersSocket (session.userinfo.username, socket);
+			broadcastToUsersSockets (session.userinfo.username, 'forced_logout', {});
+			if (typeof activeusers[session.userinfo.username] !== 'undefined') {
+			    delete activeusers[session.userinfo.username];
+			    forcelogout[session.userinfo.username] = new Date();	// Must force out other established sessions if they exist
+			}
 			delete session.userinfo; 
 			session.save();
 		    })
@@ -240,7 +315,8 @@ exports.main = function (connectionerror, socket, session, users) {
 	    .then (function (doc) {
 		    if (doc === null)
 		        throw new Error ("Could not find user <" + session.userinfo.username + ">");
-		    doc.userinfo.projects.forEach (function (p) {p.githook = githookurl + '?' + p.githookparams;});
+		    // Do this afresh at each emit because we may use the same DB but be running on a different server
+		    doc.userinfo.projects.forEach (function (p) {p.githook = operatingenv.githookurl + '?user=' + session.userinfo.username + '&project=' + p.projectname + '&key=' + p.key;});
 		    socket.emit ('getprojectlist_granted', doc.userinfo.projects);
 		})
 	    .fail (EmitError)
@@ -260,8 +336,7 @@ exports.main = function (connectionerror, socket, session, users) {
 		    if (doc.userinfo.projects.some (function (p) { return (p.projectname === theproject.projectname)}))
 			throw new Error ('Projectname <' + theproject.projectname + '> already exists in your portfolio. Pick another name');
 		    else {
-			var githookparams = 'user=' + session.userinfo.username + '&project=' + theproject.projectname + '&key=' + crypto.randomBytes(12).toString('hex')
-			doc.userinfo.projects.unshift ({projectname: theproject.projectname, githookparams: githookparams});
+			doc.userinfo.projects.unshift ({projectname: theproject.projectname, key: crypto.randomBytes(12).toString('hex')});
 			return users.Q.update ({_id: session.userinfo.username}, doc);
 		    }
 		})
@@ -300,10 +375,44 @@ exports.main = function (connectionerror, socket, session, users) {
 
 var spawn = require ('child_process').spawn;
 
-exports.launchrun = function (req, res) {
-    console.log (req.query);
+// For now, project activity is ephmereal. Eventually, we need to store it and show it to the user
+exports.projectupdate = function (io, sessionSockets, users, req, res) {
+    var username = req.query.user;
+    var projectname = req.query.project;
+    var projectkey = req.query.key;
+    console.log ('PROJECTUPDATE:  <' + username + '> projectname <' + projectname + '> key <' + projectkey + '>');
+
     if (req.method === 'POST')
         console.dir (req.body);
+
+    for (u in activeusers) {
+	console.log ('Checking sockets for user <' + u + '>');
+	if (u === username) {	// Does the user still have this project and is the key valid?
+	    users.Q.findOne ({_id: username})
+	    .then (function (doc) {
+		    var theproject = null;
+	            if (doc === null)	// Whoa! The user doesn't exist anymore?
+		        throw new Error ('Username <' + username + '> could not be found');
+		    if (doc.userinfo.projects.every (function (p) { theproject = p; return (p.projectname !== projectname)}))
+			throw new Error ('Projectname <' + projectname + '> could not be found');
+		    else if (theproject.key !== projectkey)
+			throw new Error ('Bad key supplied for update of project <' + projectname + '>');
+		    return "Project updated";
+		})
+	    .then (function () {
+		    activeusers[u].forEach (function (socket) {
+			    socket.emit ('projectupdate', {projectname: projectname});
+			});
+		})
+	    .fail (function (e) {
+		    activeusers[u].forEach (function (socket) {
+			    socket.emit ('error', {message: e.toString()});
+			});
+		})
+	    .done ();
+	}
+    }
+
     junk = spawn ('ls', ['-lrt', '.', 'asdadasd', '..']);
 
     function appendtoResponse (data) {
