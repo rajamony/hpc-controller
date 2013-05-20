@@ -58,7 +58,7 @@ function formattedtime (now) {
     function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
     return now.getUTCFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getUTCMonth()] + '-'
     		+ zeropad (now.getUTCDate()) + ' '
-      		+ zeropad (now.getUTCHours()) + ':' + zeropad (now.getUTCMinutes()) + ':' + zeropad (now.getUTCSeconds()) + ' AOE';
+      		+ zeropad (now.getUTCHours()) + ':' + zeropad (now.getUTCMinutes()) + ':' + zeropad (now.getUTCSeconds()) + ' UTC';
 }
  
 
