@@ -27,9 +27,9 @@ var app = angular.module('myApp', [])
 
 function formattedtime (now) {
     function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
-    return now.getUTCFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getUTCMonth()] + '-'
-    		+ zeropad (now.getUTCDate()) + ' '
-      		+ zeropad (now.getUTCHours()) + ':' + zeropad (now.getUTCMinutes()) + ':' + zeropad (now.getUTCSeconds()) + ' UTC';
+    return now.getFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()] + '-'
+    		+ zeropad (now.getDate()) + ' '
+      		+ zeropad (now.getHours()) + ':' + zeropad (now.getMinutes()) + ':' + zeropad (now.getSeconds()) + ' (local)';
 }
  
 /**
@@ -115,7 +115,7 @@ console.log ("MainCtrl INVOKED");
   socket.on('info', function (data) {
       rootscope.site_title = data.site_title;
       rootscope.site_hostname = data.site_hostname;
-      rootscope.serverstarttime = data.serverstarttime;
+      rootscope.serverstarttime = formattedtime (new Date(data.serverstarttime));
     });
 
   socket.on ('error', function (data) {

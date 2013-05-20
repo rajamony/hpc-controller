@@ -25,7 +25,7 @@ var util = require ('util'),
     assert = require('assert'),
     Q = require ('q'),
     operatingenv = null,
-    serverstarttime = formattedtime(new Date()),
+    serverstarttime = Date.now();	// formattedtime(new Date()),
     forcelogout = {},		// So we can forcibly log out a user
     activeusers = {};		// To keep track of the various socket endpoints for a specific user
 
