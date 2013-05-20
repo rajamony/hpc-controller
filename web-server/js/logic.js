@@ -429,10 +429,11 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
 function getGitProjectInfo (gitdata) {
     var g = {projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', updatetime: formattedtime (new Date())};
     try {
+	var payload = JSON.parse (gitdata.payload);
 	g.projectname = gitdata.project;
-	g.updatebranch = gitdata.payload.ref;
-	g.updater = gitdata.payload.head_commit.author.username;
-	g.updatetime = gitdata.payload.head_commit.timestamp;
+	g.updatebranch = payload.ref;
+	g.updater = payload.head_commit.author.username;
+	g.updatetime = payload.head_commit.timestamp;
     }
     catch (e) {
         console.error ('Error while trying to render git info: ' + e);
