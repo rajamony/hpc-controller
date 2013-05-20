@@ -94,6 +94,7 @@ function MainCtrl (rootscope, $location, wrappedsocket) {
 console.log ("MainCtrl INVOKED");
   rootscope.error = [];		// No errors when we begin
   rootscope.user = null;	// No user when we begin
+  rootscope.projectactivity = [];	// So its available even we move around
 
   var socket = wrappedsocket(rootscope);
 
@@ -237,7 +238,6 @@ function AdministerCtrl ($scope, $location, wrappedsocket, rootscope) {
 DevelopCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numprojectstoactupon = 0;
-  $scope.projectactivity = [];
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getprojectlist", {});
