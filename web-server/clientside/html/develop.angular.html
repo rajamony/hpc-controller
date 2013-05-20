@@ -43,9 +43,11 @@
 
 </div>
 
-<div class="row">
+<div class="row" ng-show="projectactivity.length">
   <div class="span12">
-    <h4> Activity log for all projects: </h4>
-      <p ng-repeat="a in projectactivity"> {{a}} <p>
+    <div class="highlighted-info">
+	<h4> Activity log: </h4>
+	  <p ng-repeat="a in projectactivity"> {{a}} <p>
+    </div>
   </div>
 </div>

@@ -24,6 +24,14 @@ var app = angular.module('myApp', [])
       };
   });
   
+
+function formattedtime (now) {
+    function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
+    return now.getUTCFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getUTCMonth()] + '-'
+    		+ zeropad (now.getUTCDate()) + ' '
+      		+ zeropad (now.getUTCHours()) + ':' + zeropad (now.getUTCMinutes()) + ':' + zeropad (now.getUTCSeconds()) + ' UTC';
+}
+ 
 /**
  * socket.io's "on" handler's can be stacked to enable multiple handlers to be invoked on the same event. 
  * This creates a problem for us when we specify socket.on handlers within a controller because Angular
@@ -267,7 +275,8 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
     });
 
   socket.on ('projectupdate', function (u) {
-      $scope.projectactivity.unshift (u); 
+      var msg = 'Project <' + u.projectname + '> updated on branch <' + u.updatebranch + '> by ' + u.updater + ' at ' + u.updatetime;
+      $scope.projectactivity.unshift (msg); 
       console.log ('Project update: ' + u);
     });
 }

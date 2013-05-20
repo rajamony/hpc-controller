@@ -380,10 +380,11 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
     var username = req.query.user;
     var projectname = req.query.project;
     var projectkey = req.query.key;
+    var gitdata = null;
     console.log ('PROJECTUPDATE:  <' + username + '> projectname <' + projectname + '> key <' + projectkey + '>');
 
     if (req.method === 'POST')
-        console.dir (req.body);
+        gitdata = req.body;
 
     for (u in activeusers) {
 	console.log ('Checking sockets for user <' + u + '>');
@@ -401,7 +402,7 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
 		})
 	    .then (function () {
 		    activeusers[u].forEach (function (socket) {
-			    socket.emit ('projectupdate', {projectname: projectname});
+			    socket.emit ('projectupdate', getGitProjectInfo (gitdata));
 			});
 		})
 	    .fail (function (e) {
@@ -423,6 +424,21 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
     junk.on ('close', function (code) {
             res.end();
 	});
+}
+
+function getGitProjectInfo (gitdata) {
+    var g = {projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', updatetime: formattedtime (new Date())};
+    try {
+	g.projectname = gitdata.project;
+	g.updatebranch = gitdata.payload.ref;
+	g.updater = gitdata.payload.head_commit.author.username;
+	g.updatetime = gitdata.payload.head_commit.timestamp;
+    }
+    catch (e) {
+        console.error ('Error while trying to render git info: ' + e);
+	console.dir (gitdata);
+    }
+    return g;
 }
 
 
