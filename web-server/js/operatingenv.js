@@ -19,7 +19,7 @@
  *
  */
 
-function returnEnv (server, port) {
+function returnEnv (port) {
     var operatingenv = {};
     if ((typeof process.env.SITE_SECRET === 'undefined') || (typeof process.env.ADMIN_PASSWORD === 'undefined') || (typeof process.env.PUBLIC_HOSTNAME === 'undefined')) {
         console.log ('SITE_SECRET, ADMIN_PASSWORD, and PUBLIC_HOSTNAME must be passed in as environment variables');
@@ -28,7 +28,6 @@ function returnEnv (server, port) {
     operatingenv.SITE_SECRET = process.env.SITE_SECRET;
     operatingenv.sslkeydir = process.env.SSLKEYDIR;
     operatingenv.adminpw = process.env.ADMIN_PASSWORD;
-    operatingenv.protocol = server.hasOwnProperty('cert')?'https://':'http://';
     operatingenv.hostname = process.env.PUBLIC_HOSTNAME;
     operatingenv.outdir = '/' + (process.env.USER_DIRECTORY || 'userdata');
     operatingenv.githookurl = operatingenv.protocol + operatingenv.hostname + ':' + port + '/launchrun';

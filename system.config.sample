@@ -3,17 +3,17 @@
 ##
 
 # Your external facing hostname. If on AWS, uncomment the next line. The localhost line is provided for local testing
-# PUBLIC_HOSTNAME = `curl http://169.254.169.254/latest/meta-data/public-hostname`
-# PUBLIC_HOSTNAME='localhost'
+# export PUBLIC_HOSTNAME = `curl http://169.254.169.254/latest/meta-data/public-hostname`
+# export PUBLIC_HOSTNAME='localhost'
 
 # The following are required for the SSL key configuration (https access). Modify as appropriate
-ssl_country=US
-ssl_state=Texas
-ssl_locality=Austin
-ssl_organization="IBM Research"
-ssl_orgunit="PHM Project"
-ssl_name="yourhostname"
-ssl_email="you@you.com"
+export ssl_country=US
+export ssl_state=Texas
+export ssl_locality=Austin
+export ssl_organization="IBM Research"
+export ssl_orgunit="PHM Project"
+export ssl_name="yourhostname"
+export ssl_email="you@you.com"
 
 
 ################################################################################
@@ -22,25 +22,25 @@ ssl_email="you@you.com"
 
 
 # FIXME: This ought to be on S3 and not on the instance store
-MONGODATABASEDIR=./mongo-database
+export MONGODATABASEDIR=./mongo-database
 
 # Where mongo will dump its output
-MONGOOUTFILE=/tmp/OUT.mongo
+export MONGOOUTFILE=/tmp/OUT.mongo
 
 # Where the webserver will dump its output
-WEBSERVEROUTFILE=/tmp/OUT.webserver
+export WEBSERVEROUTFILE=/tmp/OUT.webserver
 
 # Directory where SSL keys will be stored. This directory must be local to the controller
-SSLKEYDIR=/opt/keys
+export SSLKEYDIR=/opt/keys
 
 # Web server location
-WEBSERVERDIR=web-server
+export WEBSERVERDIR=web-server
 
 # This file is used to detect when the web server has exited. Beware - the server-side githook also uses it
-MARKERFILE=/tmp/webserver-has-exited
+export MARKERFILE=/tmp/webserver-has-exited
 
 # Site secret (used to encrypt session cookies)
-# SITE_SECRET='your site secret here'
+# export SITE_SECRET='your site secret here'
 
 # Admin password
 # export ADMIN_PASSWORD='???'
