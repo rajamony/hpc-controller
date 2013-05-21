@@ -26,7 +26,7 @@ function returnEnv (port) {
 	process.exit (1);
     }
     operatingenv.SITE_SECRET = process.env.SITE_SECRET;
-    operatingenv.sslkeydir = process.env.SSLKEYDIR;
+    operatingenv.sslkeydir = process.env.SSLKEYDIR + '/';
     operatingenv.adminpw = process.env.ADMIN_PASSWORD;
     operatingenv.hostname = process.env.PUBLIC_HOSTNAME;
     operatingenv.outdir = '/' + (process.env.USER_DIRECTORY || 'userdata');
