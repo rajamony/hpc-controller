@@ -427,7 +427,7 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
     var spawn = require ('child_process').spawn;
     var theupdate = new githubUpdate (req);
 
-    if (false && ! theupdate.valid) {
+    if (! theupdate.valid) {
 	console.log ('projectupdate: ERROR parsing github update\nreq.query = ' + util.inspect (req.query) + '\nreq.body = ' + util.inspect (req.body) + '\n');
         return;	// We couldn't even parse the github update, so we're outta here 
     }

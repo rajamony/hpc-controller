@@ -9,7 +9,7 @@
 ## Setup up SSL (https access)
 ##
 if [ ! -d $SSLKEYDIR ]; then
-    echo "You need to manually create /opt/keys and make it r/w by the user who will run the controller"
+    echo "You need to manually create $SSLKEYDIR and make it r/w by the user who will run the controller"
     exit 1
 fi
 
