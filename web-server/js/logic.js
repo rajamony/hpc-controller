@@ -429,7 +429,7 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
 
     if (false && ! theupdate.valid) {
 	console.log ('projectupdate: ERROR parsing github update\nreq.query = ' + util.inspect (req.query) + '\nreq.body = ' + util.inspect (req.body) + '\n');
-        return;	// We couldn't even parse the github update, so we're outta here
+        return;	// We couldn't even parse the github update, so we're outta here 
     }
     console.log ('PROJECTUPDATE: Details = ' + util.inspect (theupdate));
 
