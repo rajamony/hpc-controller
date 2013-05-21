@@ -1,5 +1,11 @@
 #!/bin/bash
 
-mkdir -p ./userdata/$1
-echo "Called on repository $2"
-echo "Called on branch $3"
+. ../system.config
+
+OUTDIR=./$USER_DIRECTORY/$1
+
+mkdir -p $OUTDIR
+touch $OUTDIR/status.txt
+
+echo "Called on repository $2" >> $OUTDIR/status.txt
+echo "Called on branch $3" >> $OUTDIR/status.txt

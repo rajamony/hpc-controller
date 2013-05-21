@@ -49,12 +49,15 @@ app.use (cookieParser);
 app.use (express.session({cookie: {maxAge: new Date(Date.now() + 10*365*86400*1000), httpOnly: /* FIXME */ false}, store: sessionstore}));
 app.use (express.favicon());
 app.use (app.router);	// I still don't understand wtf this does. http://tinyurl.com/afab75h is not entirely correct
+
 app.all ('/launchrun?*', function (req, res) {logic.projectupdate (io, sessionSockets, users, req, res);});
 app.get ('/exitnow?*', logic.exitnow);
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
-app.use(express.static(__dirname + operatingenv.outdir), {maxAge: 0});
-app.use(express.directory(__dirname + operatingenv.outdir));
+
+app.use('/userdata', express.static(__dirname + '/userdata'), {maxAge: 0});
+app.use('/userdata', express.directory(__dirname + '/userdata'));
+
 
 sessionSockets.on('connection', function (err, socket, session) {
 	if (err !== null)
