@@ -242,6 +242,7 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getprojectlist", {});
+  socket.emit ("getallprojectupdates", {});
 
   $scope.AddProject = function () {
     $scope.ClearErrors();
@@ -265,21 +266,34 @@ function DevelopCtrl ($scope, $location, wrappedsocket, rootscope) {
       });
   }
 
+  socket.on ("addproject_granted", function (u) {
+      console.log ('Project added: ' + JSON.stringify(u));
+      // socket.emit ("getallprojectupdates", {});		// If the project list is changed, refresh the project update view
+    });
+  socket.on ("deleteproject_granted", function () {
+      socket.emit ("getallprojectupdates", {});		// If the project list is changed, refresh the project update view
+    });
+
+
   socket.on ("getprojectlist_granted", function (p) {
       $scope.myprojects = p;
       console.log ('myprojects:');
       console.dir (p);
     });
 
-  socket.on ("addproject_granted", function (u) {
-      console.log ('Project added: ' + JSON.stringify(u));
+  function addToProjectUpdate (u) {
+    var update = {name: u.projectname, outdir: u.outdir, 
+    			statusmsg: 'Project <' + u.projectname + '> updated on branch <' + u.updatebranch + '> by ' + u.updater + ' at ' + u.updatetime};
+    $scope.projectactivity.unshift (update); 
+    console.log ('Project update: ' + update.statusmsg + update.outdir);
+  }
+
+  socket.on ('getallprojectupdates_granted', function (updates) {
+      $scope.projectactivity = [];
+      updates.forEach (function (u) {addToProjectUpdate (u);});
     });
 
-  socket.on ('projectupdate', function (u) {
-      var update = {name: u.projectname, statusmsg: 'Project <' + u.projectname + '> updated on branch <' + u.updatebranch + '> by ' + u.updater + ' at ' + u.updatetime};
-      $scope.projectactivity.unshift (update); 
-      console.log ('Project update: ' + update.statusmsg);
-    });
+  socket.on ('projectupdate', function (u) { addToProjectUpdate (u);});
 }
 
 /**

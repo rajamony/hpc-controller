@@ -53,6 +53,8 @@ app.all ('/launchrun?*', function (req, res) {logic.projectupdate (io, sessionSo
 app.get ('/exitnow?*', logic.exitnow);
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
+app.use(express.static(__dirname + operatingenv.outdir), {maxAge: 0});
+app.use(express.directory(__dirname + operatingenv.outdir));
 
 sessionSockets.on('connection', function (err, socket, session) {
 	if (err !== null)

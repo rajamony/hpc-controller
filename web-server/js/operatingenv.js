@@ -29,7 +29,9 @@ function returnEnv (server, port) {
     operatingenv.adminpw = process.env.ADMIN_PASSWORD;
     operatingenv.protocol = server.hasOwnProperty('cert')?'https://':'http://';
     operatingenv.hostname = process.env.PUBLIC_HOSTNAME;
+    operatingenv.outdir = '/' + (process.env.USER_DIRECTORY || 'userdata');
     operatingenv.githookurl = operatingenv.protocol + operatingenv.hostname + ':' + port + '/launchrun';
+    console.log ("The outdir is <" + operatingenv.outdir + ">");
     return operatingenv;
 }
 

@@ -56,9 +56,8 @@ function UserInfo (u) {
 
 function formattedtime (now) {
     function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
-    return now.getUTCFullYear() + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getUTCMonth()] + '-'
-    		+ zeropad (now.getUTCDate()) + ' '
-      		+ zeropad (now.getUTCHours()) + ':' + zeropad (now.getUTCMinutes()) + ':' + zeropad (now.getUTCSeconds()) + ' UTC';
+    return zeropad (now.getHours()) + ':' + zeropad (now.getMinutes()) + ':' + zeropad (now.getSeconds()) + '-' + 
+	    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()] + '-' + zeropad (now.getDate()) + '-' + now.getFullYear();
 }
  
 
@@ -336,7 +335,7 @@ exports.main = function (io, sessionSockets, connectionerror, socket, session, u
 		    if (doc.userinfo.projects.some (function (p) { return (p.projectname === theproject.projectname)}))
 			throw new Error ('Projectname <' + theproject.projectname + '> already exists in your portfolio. Pick another name');
 		    else {
-			doc.userinfo.projects.unshift ({projectname: theproject.projectname, key: crypto.randomBytes(12).toString('hex')});
+			doc.userinfo.projects.unshift ({projectname: theproject.projectname, key: crypto.randomBytes(12).toString('hex'), gitdata: []});
 			return users.Q.update ({_id: session.userinfo.username}, doc);
 		    }
 		})
@@ -354,6 +353,7 @@ exports.main = function (io, sessionSockets, connectionerror, socket, session, u
 	    .then (function () {
 	            return users.Q.findOne ({_id: session.userinfo.username});
 		})
+	    // FIXME: Now blow up the user's project directory 
 	    .then (function (doc) {
 	            if (doc === null)
 		        throw new Error ('Username <' + session.userinfo.username + '> does not exist.');
@@ -365,83 +365,110 @@ exports.main = function (io, sessionSockets, connectionerror, socket, session, u
 	    .then (function (n) {
 		    if (n === 0)
 		        throw new Error ('Something has gone kaput. We tried but could not delete project <' + theproject.projectname + '>');
-		    else
-			socket.emit ('deleteproject_granted', {theproject: theproject.projectname});
+		    socket.emit ('deleteproject_granted', {theproject: theproject.projectname});
 		})
 	    .fail (EmitError)
 	    .done (SendProjectList);
 	});
+
+    socket.on ('getallprojectupdates', SendAllProjectUpdates);
+    function SendAllProjectUpdates () {
+	Q.fcall (BarfIfNotDeveloper)
+	    .then (function () {
+		    return users.Q.findOne ({_id: session.userinfo.username});
+		})
+	    .then (function (doc) {
+		    var response = [];
+		    if (doc === null)
+			throw new Error ("Could not find user <" + session.userinfo.username + ">");
+		    console.log ("Accumulating project updates into response for getallprojectupdates_granted emit");
+		    doc.userinfo.projects.forEach (function (p) {
+			    p.gitdata.forEach (function (g) {
+				    response.push (g);
+				});
+			});
+		    response.sort (function (a, b) {return a.whenobserved > b.whenobserved;});
+		    console.dir (response);
+		    socket.emit ('getallprojectupdates_granted', response);
+		})
+	    .fail (EmitError)
+	    .done ();
+    }
 }
 
-var spawn = require ('child_process').spawn;
+function githubUpdate (req) {	// Preserve the raw github data, but parse it into something useful for us also
+    var theupdate = {valid: false, projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', whenobserved: Date.now(), updatetime: formattedtime(new Date())};
 
-// For now, project activity is ephmereal. Eventually, we need to store it and show it to the user
+    if (typeof req.query !== 'undefined' && typeof req.query.user !== 'undefined' && typeof req.query.project !== 'undefined' && typeof req.query.key !== 'undefined') {
+        theupdate.projectname = req.query.project;
+        theupdate.key = req.query.key;
+	theupdate.username = req.query.user;
+	var gitdata = req.body;
+	if (typeof gitdata !== 'undefined' && typeof gitdata.payload !== 'undefined') {
+	    theupdate.rawgithubpayload = gitdata.payload;
+	    var payload = JSON.parse (gitdata.payload);
+	    if (typeof payload.ref !== 'undefined' && typeof payload.head_commit !== 'undefined' && typeof payload.head_commit.author !== 'undefined' 
+	    		&& typeof payload.head_commit.author.username !== 'undefined' && typeof payload.head_commit.timestamp !== 'undefined'
+	    		&& typeof payload.repository.url !== 'undefined') {
+		theupdate.updatebranch = payload.ref;
+		theupdate.updater = payload.head_commit.author.username;
+		theupdate.repositoryurl = payload.repository.url;
+		try { theupdate.updatetime = formattedtime(new Date(payload.head_commit.timestamp)); theupdate.valid = true;}
+		catch (e) { console.log ('githubUpdate: Could not make sense of timestamp <' + payload.head_commit.timestamp + '>'); }
+	    }
+	}
+    }
+    theupdate.outdir = operatingenv.outdir + '/' + theupdate.username + '/' + theupdate.projectname + '/' + theupdate.updatetime;
+    return theupdate;
+}
+
+
 exports.projectupdate = function (io, sessionSockets, users, req, res) {
-    var username = req.query.user;
-    var projectname = req.query.project;
-    var projectkey = req.query.key;
-    var gitdata = null;
-    console.log ('PROJECTUPDATE:  <' + username + '> projectname <' + projectname + '> key <' + projectkey + '>');
+    var spawn = require ('child_process').spawn;
+    var theupdate = new githubUpdate (req);
 
-    if (req.method === 'POST')
-        gitdata = req.body;
+    if (false && ! theupdate.valid) {
+	console.log ('projectupdate: ERROR parsing github update\nreq.query = ' + util.inspect (req.query) + '\nreq.body = ' + util.inspect (req.body) + '\n');
+        return;	// We couldn't even parse the github update, so we're outta here
+    }
+    console.log ('PROJECTUPDATE: Details = ' + util.inspect (theupdate));
 
-    for (u in activeusers) {
-	console.log ('Checking sockets for user <' + u + '>');
-	if (u === username) {	// Does the user still have this project and is the key valid?
-	    users.Q.findOne ({_id: username})
-	    .then (function (doc) {
-		    var theproject = null;
-	            if (doc === null)	// Whoa! The user doesn't exist anymore?
-		        throw new Error ('Username <' + username + '> could not be found');
-		    if (doc.userinfo.projects.every (function (p) { theproject = p; return (p.projectname !== projectname)}))
-			throw new Error ('Projectname <' + projectname + '> could not be found');
-		    else if (theproject.key !== projectkey)
-			throw new Error ('Bad key supplied for update of project <' + projectname + '>');
-		    return "Project updated";
-		})
-	    .then (function () {
-		    activeusers[u].forEach (function (socket) {
-			    socket.emit ('projectupdate', getGitProjectInfo (gitdata));
-			});
-		})
-	    .fail (function (e) {
-		    activeusers[u].forEach (function (socket) {
-			    socket.emit ('error', {message: e.toString()});
-			});
-		})
-	    .done ();
+    function informThisUsersSockets (fn) {
+	for (var u in activeusers) {
+	    if (activeusers.hasOwnProperty (u) && (u === theupdate.username)) {
+		console.log ('Checking sockets for user <' + u + '>');
+		activeusers[u].forEach (fn);
+	    }
 	}
     }
 
-    junk = spawn ('ls', ['-lrt', '.', 'asdadasd', '..']);
+    users.Q.findOne ({_id: theupdate.username})
+    .then (function (doc) {
+	    if (doc === null)	// Whoa! The user doesn't exist anymore?
+		throw new Error ('Username <' + theupdate.username + '> could not be found');
+	    if (! doc.userinfo.projects.some (function (p) { return (p.projectname === theupdate.projectname && p.key === theupdate.key);}))
+		throw new Error ('Projectname <' + projectname + '> could not be found or the supplied key was invalid');
+	})
+    .then (function () {
+	    return users.Q.update ({_id: theupdate.username, 'userinfo.projects': {$elemMatch: {'projectname': theupdate.projectname, 'key': theupdate.key}}}, 
+				{$push: {'userinfo.projects.$.gitdata': theupdate}});	// FIXME: Trim array to prevent blowup
+	})
+    .then (function () {
+    	    var thedir = theupdate.username + '/' + theupdate.projectname + '/' + theupdate.updatetime;
+	    var bringover = spawn ('pullprojectandrun.sh', [thedir, theupdate.repositoryurl, theupdate.updatebranch]);
+	    bringover.stdout.on ('data', function (data) { res.write (data) });
+	    bringover.stderr.on ('data', function (data) { res.write (data) });
+	    bringover.on ('close', function (code) { res.end(); });
+	})
+    .then (function () {
+	    informThisUsersSockets (function (socket) { socket.emit ('projectupdate', theupdate); });
+	})
+    .fail (function (e) {
+	    informThisUsersSockets (function (socket) { socket.emit ('error', {message: e.toString()})});
+	})
+    .done ();
 
-    function appendtoResponse (data) {
-	res.write (data);
-    }
-    junk.stdout.on ('data', appendtoResponse);
-    junk.stderr.on ('data', appendtoResponse);
-    junk.on ('close', function (code) {
-            res.end();
-	});
 }
-
-function getGitProjectInfo (gitdata) {
-    var g = {projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', updatetime: formattedtime (new Date())};
-    try {
-	var payload = JSON.parse (gitdata.payload);
-	g.projectname = gitdata.project;
-	g.updatebranch = payload.ref;
-	g.updater = payload.head_commit.author.username;
-	g.updatetime = payload.head_commit.timestamp;
-    }
-    catch (e) {
-        console.error ('Error while trying to render git info: ' + e);
-	console.dir (gitdata);
-    }
-    return g;
-}
-
 
 exports.exitnow = function (req, res) {
     res.end ('Got an exit command at ' + new Date());

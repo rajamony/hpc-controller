@@ -45,3 +45,5 @@ MARKERFILE=/tmp/webserver-has-exited
 # Admin password
 # export ADMIN_PASSWORD='???'
 
+# Where user projects are downloaded and run
+export USER_DIRECTORY='userdata'
