@@ -26,6 +26,7 @@ function returnEnv (server, port) {
 	process.exit (1);
     }
     operatingenv.SITE_SECRET = process.env.SITE_SECRET;
+    operatingenv.sslkeydir = process.env.SSLKEYDIR;
     operatingenv.adminpw = process.env.ADMIN_PASSWORD;
     operatingenv.protocol = server.hasOwnProperty('cert')?'https://':'http://';
     operatingenv.hostname = process.env.PUBLIC_HOSTNAME;
