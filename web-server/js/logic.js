@@ -455,7 +455,7 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
 	})
     .then (function () {
     	    var thedir = theupdate.username + '/' + theupdate.projectname + '/' + theupdate.updatetime;
-	    var bringover = spawn ('pullprojectandrun.sh', [thedir, theupdate.repositoryurl, theupdate.updatebranch]);
+	    var bringover = spawn ('./pullprojectandrun.sh', [thedir, theupdate.repositoryurl, theupdate.updatebranch]);
 	    bringover.stdout.on ('data', function (data) { res.write (data) });
 	    bringover.stderr.on ('data', function (data) { res.write (data) });
 	    bringover.on ('close', function (code) { res.end(); });
