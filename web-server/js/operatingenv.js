@@ -19,7 +19,7 @@
  *
  */
 
-function returnEnv (port) {
+function returnEnv () {
     var operatingenv = {};
     if ((typeof process.env.SITE_SECRET === 'undefined') || (typeof process.env.ADMIN_PASSWORD === 'undefined') || (typeof process.env.PUBLIC_HOSTNAME === 'undefined')) {
         console.log ('SITE_SECRET, ADMIN_PASSWORD, and PUBLIC_HOSTNAME must be passed in as environment variables');
@@ -30,7 +30,6 @@ function returnEnv (port) {
     operatingenv.adminpw = process.env.ADMIN_PASSWORD;
     operatingenv.hostname = process.env.PUBLIC_HOSTNAME;
     operatingenv.outdir = '/' + (process.env.USER_DIRECTORY || 'userdata');
-    operatingenv.githookurl = operatingenv.protocol + operatingenv.hostname + ':' + port + '/launchrun';
     console.log ("The outdir is <" + operatingenv.outdir + ">");
     return operatingenv;
 }

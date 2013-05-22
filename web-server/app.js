@@ -41,7 +41,7 @@ var 	util = require ('util'),
 				{ root: '/js', 		disklocation: '/clientside/js'},
 				{ root: '/', 		disklocation: '/clientside/html'},];
 
-operatingenv.protocol = server.hasOwnProperty('cert')?'https://':'http://';
+operatingenv.githookurl = (server.hasOwnProperty('cert')?'https://':'http://') + operatingenv.hostname + ':' + port + '/launchrun';
 app.set ('case sensitive routing', true);
 app.use (express.logger('dev'));
 app.use (express.bodyParser());		// To handle POSTs.
