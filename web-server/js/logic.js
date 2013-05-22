@@ -476,3 +476,4 @@ exports.exitnow = function (req, res) {
     res.end ('Got an exit command at ' + new Date());
     setTimeout (process.exit, 1000);	// An inelegant way of making sure the response is received before the server dies
 };
+
