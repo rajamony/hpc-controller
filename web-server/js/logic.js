@@ -56,7 +56,7 @@ function UserInfo (u) {
 
 function formattedtime (now) {
     function zeropad (n) { return ((n < 10) ? '0' : '') + n.toString(); }
-    return zeropad (now.getHours()) + ':' + zeropad (now.getMinutes()) + ':' + zeropad (now.getSeconds()) + '-' + 
+    return zeropad (now.getHours()) + ':' + zeropad (now.getMinutes()) + ':' + zeropad (now.getSeconds()) + ' ' + 
 	    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()] + '-' + zeropad (now.getDate()) + '-' + now.getFullYear();
 }
  
@@ -397,7 +397,8 @@ exports.main = function (io, sessionSockets, connectionerror, socket, session, u
 }
 
 function githubUpdate (req) {	// Preserve the raw github data, but parse it into something useful for us also
-    var theupdate = {valid: false, projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', whenobserved: Date.now(), updatetime: formattedtime(new Date())};
+    var theupdate = {valid: false, projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', whenobserved: Date.now(),
+    		     updatetime: formattedtime(new Date()), commit: 'none' };
 
     if (typeof req.query !== 'undefined' && typeof req.query.user !== 'undefined' && typeof req.query.project !== 'undefined' && typeof req.query.key !== 'undefined') {
         theupdate.projectname = req.query.project;
@@ -409,8 +410,9 @@ function githubUpdate (req) {	// Preserve the raw github data, but parse it into
 	    var payload = JSON.parse (gitdata.payload);
 	    if (typeof payload.ref !== 'undefined' && typeof payload.head_commit !== 'undefined' && typeof payload.head_commit.author !== 'undefined' 
 	    		&& typeof payload.head_commit.author.username !== 'undefined' && typeof payload.head_commit.timestamp !== 'undefined'
-	    		&& typeof payload.repository.url !== 'undefined') {
+			&& typeof payload.after !== 'undefined' && typeof payload.repository.url !== 'undefined') {
 		theupdate.updatebranch = payload.ref;
+		theupdate.commit = payload.after;
 		theupdate.updater = payload.head_commit.author.username;
 		theupdate.repositoryurl = payload.repository.url;
 		try { theupdate.updatetime = formattedtime(new Date(payload.head_commit.timestamp)); theupdate.valid = true;}
@@ -418,7 +420,8 @@ function githubUpdate (req) {	// Preserve the raw github data, but parse it into
 	    }
 	}
     }
-    theupdate.outdir = operatingenv.outdir + '/' + theupdate.username + '/' + theupdate.projectname + '/' + theupdate.updatetime;
+    theupdate.projectdir = theupdate.username + '/' + theupdate.projectname + '/' + theupdate.commit;
+    theupdate.outdir = operatingenv.outdir + '/' + theupdate.projectdir;
     return theupdate;
 }
 
@@ -454,8 +457,7 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
 				{$push: {'userinfo.projects.$.gitdata': theupdate}});	// FIXME: Trim array to prevent blowup
 	})
     .then (function () {
-    	    var thedir = theupdate.username + '/' + theupdate.projectname + '/' + theupdate.updatetime;
-	    var bringover = spawn ('./pullprojectandrun.sh', [thedir, theupdate.repositoryurl, theupdate.updatebranch]);
+	    var bringover = spawn ('./pullprojectandrun.sh', [theupdate.projectdir, theupdate.repositoryurl, theupdate.updatebranch]);
 	    bringover.stdout.on ('data', function (data) { res.write (data) });
 	    bringover.stderr.on ('data', function (data) { res.write (data) });
 	    bringover.on ('close', function (code) { res.end(); });
