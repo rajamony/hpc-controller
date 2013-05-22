@@ -1,4 +1,5 @@
 Instance image prep:
-- mkdir /opt/keys
-- chmod ec2-user:ec2-user /opt/keys
+- Edit system.config
+- mkdir the chosen key directory
+- make sure the key directory is writable by the user running the web server (e.g., chown ec2-user:ec2-user KEYDIR)
 
