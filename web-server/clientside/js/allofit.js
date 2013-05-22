@@ -90,12 +90,13 @@ wrappedSocket.prototype.emit = function (event, data) {
  * While we explicitly pass in $rootScope to the injector, we could just as well have
  * passed in $scope, since $scope === $rootScope at the root
  */
-MainCtrl.$inject = ['$rootScope', '$location', 'pocket'];
-function MainCtrl (rootscope, $location, wrappedsocket) {
+MainCtrl.$inject = ['$rootScope', '$location', 'pocket', '$window'];
+function MainCtrl (rootscope, $location, wrappedsocket, thewindow) {
 console.log ("MainCtrl INVOKED");
   rootscope.error = [];		// No errors when we begin
   rootscope.user = null;	// No user when we begin
   rootscope.projectactivity = [];	// So its available even we move around
+  rootscope.alreadygotaninfo = false;	// To keep track of server reboots
 
   var socket = wrappedsocket(rootscope);
 
@@ -115,9 +116,12 @@ console.log ("MainCtrl INVOKED");
   socket.on ("signup_granted", commonSignInUp);
 
   socket.on('info', function (data) {
+      if (rootscope.alreadygotaninfo)
+          thewindow.location.reload();	// The second time we get an info, we reload the page since the client pages may also have changed
       rootscope.site_title = data.site_title;
       rootscope.site_hostname = data.site_hostname;
       rootscope.serverstarttime = formattedtime (new Date(data.serverstarttime));
+      rootscope.alreadygotaninfo = true;
     });
 
   socket.on ('error', function (data) {
