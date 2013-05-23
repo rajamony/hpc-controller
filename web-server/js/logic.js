@@ -426,7 +426,7 @@ function githubUpdate (req) {	// Preserve the raw github data, but parse it into
 }
 
 
-exports.projectupdate = function (io, sessionSockets, users, req, res) {
+exports.projectupdate = function (deployer, io, sessionSockets, users, req, res) {
     var spawn = require ('child_process').spawn;
     var theupdate = new githubUpdate (req);
 
@@ -457,10 +457,11 @@ exports.projectupdate = function (io, sessionSockets, users, req, res) {
 				{$push: {'userinfo.projects.$.gitdata': theupdate}});	// FIXME: Trim array to prevent blowup
 	})
     .then (function () {
-	    var bringover = spawn ('./pullprojectandrun.sh', [theupdate.projectdir, theupdate.repositoryurl, theupdate.updatebranch]);
-	    bringover.stdout.on ('data', function (data) { res.write (data) });
-	    bringover.stderr.on ('data', function (data) { res.write (data) });
-	    bringover.on ('close', function (code) { res.end(); });
+	    //var bringover = spawn ('./pullprojectandrun.sh', [theupdate.projectdir, theupdate.repositoryurl, theupdate.updatebranch]);
+	    //bringover.stdout.on ('data', function (data) { res.write (data) });
+	    //bringover.stderr.on ('data', function (data) { res.write (data) });
+	    //bringover.on ('close', function (code) { res.end(); });
+	    deployer.add(theupdate.repositoryurl, theupdate.commit);
 	})
     .then (function () {
 	    informThisUsersSockets (function (socket) { socket.emit ('projectupdate', theupdate); });
