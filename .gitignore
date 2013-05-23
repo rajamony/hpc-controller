@@ -2,3 +2,4 @@ system.config
 *~
 *.swp
 node_modules/
+/mongo-database/

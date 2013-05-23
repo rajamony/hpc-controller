@@ -26,6 +26,7 @@ var 	util = require ('util'),
 	fs = require ('fs'),
 	express  = require ('express'),
 	logic = require ('./js/logic.js'),
+	deployer = require ('./js/deployer.js'),
 	app = express(),
 	operatingenv = require ('./js/operatingenv.js') (server, port),
     	ssl_options = { key: fs.readFileSync(operatingenv.sslkeydir + 'root-ca.key'), cert: fs.readFileSync(operatingenv.sslkeydir + 'cert.pem')},
@@ -52,6 +53,51 @@ app.use (express.favicon());
 app.use (app.router);	// I still don't understand wtf this does. http://tinyurl.com/afab75h is not entirely correct
 
 app.all ('/launchrun?*', function (req, res) {logic.projectupdate (io, sessionSockets, users, req, res);});
+
+// XXX For testing without github
+if (process.env.TESTING) {
+  app.get ('/launchtest', function(req,res) {
+    var repo = req.param('repo');
+    var sha = req.param('sha');
+
+    console.log(repo);
+    console.log(sha);
+
+    if (repo == undefined) {
+    	res.end("need repo");
+    	return;
+    }
+
+    if (sha == undefined) {
+    	res.end("need sha");
+        return;
+    }
+
+    res.write(repo);
+    res.write(sha);
+
+    var spawn = require ('child_process').spawn;
+
+    var proc = spawn('./testdeploy.sh', [repo, sha]);
+
+    proc.stdout.on ('data', function (data) { res.write (data) });
+	proc.stderr.on ('data', function (data) { res.write (data) });
+	proc.on ('exit', function (code,signal) {
+		if (code === 0) {
+	        deployer.add(repo,sha);
+	    } else {
+	    	res.write('code: ' + code);
+	    	res.write('signal: ' + signal);
+	    }
+		res.end();
+	});
+    
+    
+  })
+}
+
+app.all('/status', deployer.status);
+
 app.get ('/exitnow?*', logic.exitnow);
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
@@ -72,4 +118,5 @@ sessionSockets.on('connection', function (err, socket, session) {
     });
 
 logic.setup (operatingenv, fs, users);
+console.log('listening on port ' + port);
 server.listen (port, '0.0.0.0');
