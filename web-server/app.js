@@ -76,21 +76,24 @@ if (process.env.TESTING) {
     res.write(repo);
     res.write(sha);
 
-    var spawn = require ('child_process').spawn;
+    //var spawn = require ('child_process').spawn;
 
-    var proc = spawn('./testdeploy.sh', [repo, sha]);
+    //var proc = spawn('./testdeploy.sh', [repo, sha]);
 
-    proc.stdout.on ('data', function (data) { res.write (data) });
-	proc.stderr.on ('data', function (data) { res.write (data) });
-	proc.on ('exit', function (code,signal) {
-		if (code === 0) {
-	        deployer.add(repo,sha);
-	    } else {
-	    	res.write('code: ' + code);
-	    	res.write('signal: ' + signal);
-	    }
-		res.end();
-	});
+    //proc.stdout.on ('data', function (data) { res.write (data) });
+	//proc.stderr.on ('data', function (data) { res.write (data) });
+	//proc.on ('exit', function (code,signal) {
+	//	if (code === 0) {
+	//        deployer.add(repo,sha);
+	//    } else {
+	//    	res.write('code: ' + code);
+	//    	res.write('signal: ' + signal);
+	//    }
+	//	res.end();
+	//});
+
+	deployer.add(repo,sha);
+	res.end();
     
     
   })
