@@ -345,6 +345,8 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.on ("getjoblist_granted", function (p) {
       $scope.activejobs = p.active;
+      $scope.queuedjobs = p.queue;
+      $scope.donejobs = p.done;
       console.log ('activejobs:');
       console.dir (p.active);
     });
