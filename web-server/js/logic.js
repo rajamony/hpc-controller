@@ -396,7 +396,7 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
     }
 
     socket.on ('getjoblist', function () {
-    	    var joblist = deployer.status;
+    	    var joblist = deployer.status();
 	    socket.emit ('getjoblist_granted', joblist);
 	});
 
