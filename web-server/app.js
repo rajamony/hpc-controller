@@ -117,7 +117,7 @@ sessionSockets.on('connection', function (err, socket, session) {
 	    // I don't think I need this codepath - the following diag provides no addnl useful information
 	    console.log ('sessionSockets CONNECTION> Error: <' + err + '> session user data: <' + util.inspect (session.userinfo, {colors: true}) + '>');
 	}
-	logic.main (io, sessionSockets, err, socket, session, users);
+	logic.main (deployer, io, sessionSockets, err, socket, session, users);
     });
 
 logic.setup (operatingenv, fs, users);

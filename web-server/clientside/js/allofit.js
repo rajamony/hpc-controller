@@ -9,6 +9,7 @@ var app = angular.module('myApp', [])
     $routeProvider.when('/', 		                {templateUrl: '/html/login.angular.html', 	  controller: FrontDoorCtrl});
     $routeProvider.when('/develop', 	                {templateUrl: '/html/develop.angular.html', 	  controller: DevelopCtrl});
     $routeProvider.when('/settings', 	                {templateUrl: '/html/settings.angular.html',	  controller: SettingsCtrl});
+    $routeProvider.when('/status', 	                {templateUrl: '/html/status.angular.html',	  controller: StatusCtrl});
     $routeProvider.when('/projectstatus/:projectname',  {templateUrl: '/html/projectstatus.angular.html', controller: ProjectStatusCtrl});
 //  Access a property foo in the $routeProvider argument as $route.current.foo
 
@@ -317,4 +318,34 @@ function ProjectStatusCtrl ($scope, $location, wrappedsocket, rootscope, routepa
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getprojectstatus", {projectname: $scope.projectname});
+}
+
+/**
+ * StatusCtrl: support for displaying job status
+ */
+StatusCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
+function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
+  $scope.numjobstoactupon = 0;
+  var socket = wrappedsocket ($scope);
+
+  socket.emit ("getjoblist", {});
+
+  $scope.KillJob = function () {
+    $scope.ClearErrors();
+    $scope.myprojects.forEach (function (u) {
+        if (u.mustact)
+          socket.emit ("killjob", {jobid: u.jobid});
+      });
+  }
+
+  socket.on ("killjob_granted", function () {
+      socket.emit ("getjoblist", {});		// If the job list changes, refresh the job view
+    });
+
+
+  socket.on ("getjoblist_granted", function (p) {
+      $scope.activejobs = p.active;
+      console.log ('activejobs:');
+      console.dir (p.active);
+    });
 }

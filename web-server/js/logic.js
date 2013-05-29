@@ -101,7 +101,7 @@ function setExceptionHandling (socket) {
     }
 }
 
-exports.main = function (io, sessionSockets, connectionerror, socket, session, users) {
+exports.main = function (deployer, io, sessionSockets, connectionerror, socket, session, users) {
 
     function EmitError (e) {
 	console.log ("EmitError called: " + e.toString() + '\n' + e.stack);
@@ -394,6 +394,20 @@ exports.main = function (io, sessionSockets, connectionerror, socket, session, u
 	    .fail (EmitError)
 	    .done ();
     }
+
+    socket.on ('getjoblist', function () {
+    	    var joblist = deployer.status;
+	    socket.emit ('getjoblist_granted', joblist);
+	});
+
+    socket.on ('killjob', function (job) {
+    	    deployer.kill (job.jobid, function (err) {
+	    	    if (typeof err === 'undefined')
+		        socket.emit ('killjob_granted', job);	// FIXME: Emit the new joblist right here instead of waiting for the client request
+		    else
+		        EmitError ('Could not kill job <' + job.jobid + '> ' + err);
+		});
+	});
 }
 
 function githubUpdate (req) {	// Preserve the raw github data, but parse it into something useful for us also

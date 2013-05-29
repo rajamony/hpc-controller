@@ -15,6 +15,7 @@
           <ul class="dropdown-menu" ng-show="user">
               <li><a href="#/administer" ng-show="(-1 != user.roles.indexOf ('admin'))">Administer</a></li>
               <li><a href="#/develop"    ng-show="(-1 != user.roles.indexOf ('developer'))">Develop</a></li>
+              <li><a href="#/status"     ng-show="(-1 != user.roles.indexOf ('admin'))">Job Status</a></li>
               <li><a href="#/settings">Account Settings</a></li>
               <li ng-click="SignOut()"> <a href="#/">Logout</a></li>
           </ul>

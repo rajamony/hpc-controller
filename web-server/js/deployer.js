@@ -122,26 +122,27 @@ function showOne(p,res) {
 	res.write('</tr>');
 }
 
-function status(req,res) {
-	res.writeHead(200, { 'Content-Type' : 'text/html'});
-	res.write('<html>');
-	res.write('<body>');
-
-	res.write('<h1>');
-	res.write('Status');
-	res.write('</h1>');
-	res.write('<table>');
-
-	queue.forEach(function(p) { showOne(p,res); });
-	if (active != null) {
-		showOne(active,res);
-	}
-	done.forEach(function(p) { showOne(p,res); });
-
-	res.write('</table>');
-	res.write('</body>');
-	res.write('</html>');
-	res.end();
+function status(/* req,res */) {
+// 	res.writeHead(200, { 'Content-Type' : 'text/html'});
+// 	res.write('<html>');
+// 	res.write('<body>');
+// 
+// 	res.write('<h1>');
+// 	res.write('Status');
+// 	res.write('</h1>');
+// 	res.write('<table>');
+// 
+// 	queue.forEach(function(p) { showOne(p,res); });
+// 	if (active != null) {
+// 		showOne(active,res);
+// 	}
+// 	done.forEach(function(p) { showOne(p,res); });
+// 
+// 	res.write('</table>');
+// 	res.write('</body>');
+// 	res.write('</html>');
+// 	res.end();
+    return {queue: queue, active: active, done: done};
 }
 
 exports.add = add;
