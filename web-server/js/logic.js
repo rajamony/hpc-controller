@@ -398,9 +398,10 @@ exports.main = function (io, sessionSockets, connectionerror, socket, session, u
 
 function githubUpdate (req) {	// Preserve the raw github data, but parse it into something useful for us also
     var theupdate = {valid: false, projectname: 'unknown', updatebranch: 'unknown', updater: 'unknown', whenobserved: Date.now(),
-    		     updatetime: formattedtime(new Date()), commit: 'none' };
+    		     updatetime: formattedtime(new Date()), commit: 'none', daemon: false };
 
     if (typeof req.query !== 'undefined' && typeof req.query.user !== 'undefined' && typeof req.query.project !== 'undefined' && typeof req.query.key !== 'undefined') {
+	theupdate.daemon = (typeof req.query.daemon === 'undefined') ? false : true;
         theupdate.projectname = req.query.project;
         theupdate.key = req.query.key;
 	theupdate.username = req.query.user;
@@ -461,7 +462,7 @@ exports.projectupdate = function (deployer, io, sessionSockets, users, req, res)
 	    //bringover.stdout.on ('data', function (data) { res.write (data) });
 	    //bringover.stderr.on ('data', function (data) { res.write (data) });
 	    //bringover.on ('close', function (code) { res.end(); });
-	    deployer.add(theupdate.repositoryurl, theupdate.commit);
+	    deployer.add(theupdate.repositoryurl, theupdate.commit, theupdate.daemon);
 	})
     .then (function () {
 	    informThisUsersSockets (function (socket) { socket.emit ('projectupdate', theupdate); });
