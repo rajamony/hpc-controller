@@ -401,11 +401,11 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
 	});
 
     socket.on ('killjob', function (job) {
-    	    deployer.kill (job.jobid, function (err) {
+    	    deployer.kill (job.repo, job.sha, function (err) {
 	    	    if (typeof err === 'undefined')
 		        socket.emit ('killjob_granted', job);	// FIXME: Emit the new joblist right here instead of waiting for the client request
 		    else
-		        EmitError ('Could not kill job <' + job.jobid + '> ' + err);
+		        EmitError ('Could not kill job <' + job.repo + ',' + job.sha + '> ' + err);
 		});
 	});
 }

@@ -334,7 +334,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     $scope.ClearErrors();
     $scope.myprojects.forEach (function (u) {
         if (u.mustact)
-          socket.emit ("killjob", {jobid: u.jobid});
+          socket.emit ("killjob", {repo: u.repo, sha: u.sha});
       });
   }
 
@@ -345,9 +345,9 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.on ("getjoblist_granted", function (p) {
       $scope.activejobs = p.active;
-      $scope.queuedjobs = p.queue;
+      $scope.pendingjobs = p.pending;
       $scope.donejobs = p.done;
-      console.log ('activejobs:');
-      console.dir (p.active);
+      console.log ('joblist:');
+      console.dir (p);
     });
 }
