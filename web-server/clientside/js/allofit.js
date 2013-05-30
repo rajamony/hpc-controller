@@ -354,6 +354,10 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.on ("getjoblist_granted", function (p) {
       $scope.joblist = p;
+      $scope.joblist = [{sha: "shasha1", attempts: 1, repo: "no repo", state: "done"},
+			{sha: "shasha2", attempts: 2, repo: "no repo", state: "active"},
+			{sha: "shasha3", attempts: 3, repo: "no repo", state: "unhappy"},
+			];
       console.log ('joblist:');
       console.dir (p);
     });
