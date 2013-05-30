@@ -142,7 +142,7 @@ function status(/* req,res */) {
 // 	res.write('</body>');
 // 	res.write('</html>');
 // 	res.end();
-    return {queue: queue, active: active, done: done};
+    return {pending: queue, active: active, done: done};
 }
 
 exports.add = add;
