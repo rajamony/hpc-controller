@@ -142,7 +142,7 @@ function status(/* req,res */) {
 // 	res.write('</body>');
 // 	res.write('</html>');
 // 	res.end();
-    return {pending: queue, active === null ? [] : [ active ], done: done};
+    return {pending: queue, active: active === null ? [] : [ active ], done: done};
     // FIXME: The above is a crude, temporary fix so that I can test the rest of my code -rajamony
 }
 
