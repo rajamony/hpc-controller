@@ -148,7 +148,8 @@ function add(repo,sha,isDaemon) {
 }
 
 function tryToKillJob (job, repo, sha) {
-    if (job.repo === repo && job.sha === sha) {
+    if ((job.repo === repo) && (job.sha === sha)) {
+	console.log ("tryToKillJob: Killing job repo <" + job.repo + " @ " + job.sha + ">");
         job.status = 'killing';
 	job.theproc.kill ('SIGKILL');
     }
