@@ -43,8 +43,8 @@ setInterval(function() {
     	console.log('trying: ' + active.repo + '@' + active.sha);
         
 
-    	var proc = spawn('./run.sh', [active.repo, active.sha]);
-	active.theproc = proc;
+    	var proc = spawn('./run.sh', [active.repo, active.sha], { detached : true });
+        active.theproc = proc;
 
     	proc.stdout.on ('data', function (data) {
     		var s = data.toString();
@@ -116,11 +116,11 @@ function add(repo,sha,isDaemon) {
 	if (isDaemon) {
 		job.state = 'active';
     	job.attempts += 1;
-	daemons.push (job);
+        daemons.push (job);
     	console.log('running daemon: ' + job.repo + '@' + job.sha);
         
-    	var proc = spawn('./run.sh', [job.repo, job.sha]);
-	job.theproc = proc;
+    	var proc = spawn('./run.sh', [job.repo, job.sha], { detached : true });
+        job.theproc = proc;
 
     	proc.stdout.on ('data', function (data) {
     		var s = data.toString();
@@ -151,19 +151,29 @@ function add(repo,sha,isDaemon) {
 
 function tryToKillJob (job, repo, sha) {
     if ((job.repo === repo) && (job.sha === sha)) {
-	console.log ("tryToKillJob: Killing job repo <" + job.repo + " @ " + job.sha + ">");
+        console.log ("tryToKillJob: Killing job repo <" + job.repo + " @ " + job.sha + ">");
         job.state = 'killing';
-	job.theproc.kill ('SIGKILL');
+        //job.theproc.kill ('SIGKILL');
+        spawn("kill",["-9",-job.theproc.pid]);
     }
 }
 
 function kill (repo, sha, fn) {
     if (active !== null)
-	tryToKillJob (active, repo, sha);
+	   tryToKillJob (active, repo, sha);
 
     daemons.forEach (function (job) {
     	    tryToKillJob (job, repo, sha);
 	});
+}
+
+function killAll() {
+    if (active !== null)
+        tryToKillJob(active, active.repo, active.sha);
+
+    daemons.forEach (function (job) {
+            tryToKillJob (job, job.repo, job.sha);
+    });
 }
 
 function showOne(p,res) {
@@ -244,3 +254,4 @@ exports.add = add;
 exports.status = status;
 exports.dump = dump;
 exports.kill = kill;
+exports.killAll = killAll;
