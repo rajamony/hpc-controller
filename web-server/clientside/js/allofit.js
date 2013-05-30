@@ -332,10 +332,19 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   $scope.KillJob = function () {
     $scope.ClearErrors();
-    $scope.myprojects.forEach (function (u) {
+    $scope.joblist.forEach (function (u) {
         if (u.mustact)
           socket.emit ("killjob", {repo: u.repo, sha: u.sha});
       });
+  }
+
+  $scope.JobSelected = function (applicabletoone, value) {
+    if (applicabletoone) 
+      $scope.numjobstoactupon += value ? 1 : -1;
+    else {
+      $scope.joblist.forEach (function (u) {u.mustact = value;});
+      $scope.numjobstoactupon = value * $scope.joblist.length;
+    }
   }
 
   socket.on ("killjob_granted", function () {
@@ -344,9 +353,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
 
   socket.on ("getjoblist_granted", function (p) {
-      $scope.activejobs = p.active;
-      $scope.pendingjobs = p.pending;
-      $scope.donejobs = p.done;
+      $scope.joblist = p;
       console.log ('joblist:');
       console.dir (p);
     });

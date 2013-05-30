@@ -397,7 +397,11 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
 
     socket.on ('getjoblist', function () {
     	    var joblist = deployer.status();
-	    socket.emit ('getjoblist_granted', joblist);
+	    var alljobs = [];
+	    joblist.active.forEach (function (job) {alljobs.push (job);});
+	    joblist.pending.forEach (function (job) {alljobs.push (job);});
+	    joblist.done.forEach (function (job) {alljobs.push (job);});
+	    socket.emit ('getjoblist_granted', alljobs);
 	});
 
     socket.on ('killjob', function (job) {

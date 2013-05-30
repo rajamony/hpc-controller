@@ -1,7 +1,7 @@
 <div class="row">
 
-  <div class="span12 form-signin" ng-show="activejobs.length"> 
-    <h4> Active Jobs: </h4>
+  <div class="span12 form-signin" ng-show="joblist.length"> 
+    <h4> Job Status: </h4>
     <form novalidate>
       <table class="table table-striped table-bordered manage">
         <tr> 
@@ -15,7 +15,7 @@
       	 </label>
           </th>
         </tr>
-        <tr ng-repeat="u in activejobs">
+        <tr ng-repeat="u in joblist">
           <td> <a href="{{u.repo}}">{{u.repo}}</a> </td> 
           <td> {{u.sha}} </td>
           <td> {{u.attempts}} </td>
@@ -27,34 +27,8 @@
     </form>
   </div>
 
-  <div class="span12 form-signin" ng-show="donejobs.length"> 
-      <h4> Done Jobs: </h4>
-      <table class="table table-striped table-bordered manage">
-        <tr> <th> Repo Name </th> <th> Commit SHA-1 </th> <th> Current Attempt </th> <th> Current State </th> </tr>
-        <tr ng-repeat="u in donejobs">
-          <td> <a href="{{u.repo}}">{{u.repo}}</a> </td> 
-          <td> {{u.sha}} </td>
-          <td> {{u.attempts}} </td>
-          <td> {{u.state}} </td>
-        </tr>
-      </table>
-  </div>
-
-  <div class="span12 form-signin" ng-show="pendingjobs.length"> 
-      <h4> Pending Jobs: </h4>
-      <table class="table table-striped table-bordered manage">
-        <tr> <th> Repo Name </th> <th> Commit SHA-1 </th> <th> Current Attempt </th> <th> Current State </th> </tr>
-        <tr ng-repeat="u in pendingjobs">
-          <td> <a href="{{u.repo}}">{{u.repo}}</a> </td> 
-          <td> {{u.sha}} </td>
-          <td> {{u.attempts}} </td>
-          <td> {{u.state}} </td>
-        </tr>
-      </table>
-  </div>
-
-  <div class="span12 form-signin" ng-show="(activejobs.length+donejobs.length+pendingjobs.length)==0">
-    There are no active/pending/done jobs to show right now.
+  <div class="span12 form-signin" ng-show="joblist.length==0">
+    There are no active,pending, or done jobs to show right now.
   </div>
 
 </div>
