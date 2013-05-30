@@ -56,9 +56,13 @@ app.all ('/launchrun?*', function (req, res) {logic.projectupdate (deployer, io,
 
 // XXX For testing without github
 if (process.env.TESTING) {
+
+	app.get('/dump', deployer.dump);
+
   app.get ('/launchtest', function(req,res) {
     var repo = req.param('repo');
     var sha = req.param('sha');
+    var isDaemon = req.param('isDaemon');
 
     console.log(repo);
     console.log(sha);
@@ -73,8 +77,14 @@ if (process.env.TESTING) {
         return;
     }
 
+    if (isDaemon == undefined) {
+    	res.end("need isDaemon");
+        return;
+    }
+
     res.write(repo);
     res.write(sha);
+    res.write(isDaemon);
 
     //var spawn = require ('child_process').spawn;
 
@@ -92,7 +102,7 @@ if (process.env.TESTING) {
 	//	res.end();
 	//});
 
-	deployer.add(repo,sha);
+	deployer.add(repo,sha,isDaemon);
 	res.end();
     
     
