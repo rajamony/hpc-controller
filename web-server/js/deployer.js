@@ -111,7 +111,7 @@ function add(repo,sha,isDaemon) {
 
 	var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new'};
 
-	if (isDaemon === "1") {
+	if (isDaemon) {
 		job.state = 'active';
     	job.attempts += 1;
     	console.log('running daemon: ' + job.repo + '@' + job.sha);
@@ -214,7 +214,7 @@ function status(/* req,res */) {
 // 	res.write('</body>');
 // 	res.write('</html>');
 // 	res.end();
-    return {pending: queue, active: active === null ? [] : [ active ], done: done};
+    return {pending: queue, active: active === null ? [] : [ active ], daemons: daemons, done: done};
     // FIXME: The above is a crude, temporary fix so that I can test the rest of my code -rajamony
 }
 

@@ -401,6 +401,7 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
 	    joblist.active.forEach (function (job) {alljobs.push (job);});
 	    joblist.pending.forEach (function (job) {alljobs.push (job);});
 	    joblist.done.forEach (function (job) {alljobs.push (job);});
+	    joblist.daemons.forEach (function (job) {alljobs.push (job);});
 	    socket.emit ('getjoblist_granted', alljobs);
 	});
 
