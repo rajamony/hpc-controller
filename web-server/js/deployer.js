@@ -57,7 +57,7 @@ setInterval(function() {
 			active.err += s;
 		});
 		proc.on ('exit', function (code,signal) {
-			console.log ("Got exit for <" active.repo + " @ " + active.sha + "> with code " + code + " and signal " + signal);
+			console.log ("Got exit for <" + active.repo + " @ " + active.sha + "> with code " + code + " and signal " + signal);
 			if (code === 0) {
 	        	if (fs.exists(active.sha + '/unhappy',function(ex) {
 	        		if (ex) {
@@ -133,7 +133,7 @@ function add(repo,sha,isDaemon) {
 			job.err += s;
 		});
 		proc.on ('exit', function (code,signal) {
-			console.log ("Got exit for <" job.repo + " @ " + job.sha + "> with code " + code + " and signal " + signal);
+			console.log ("Got exit for <" + job.repo + " @ " + job.sha + "> with code " + code + " and signal " + signal);
 			if (code === 0) {
 				job.state = 'done';
 	    	} else {
