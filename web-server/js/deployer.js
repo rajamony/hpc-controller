@@ -44,6 +44,7 @@ setInterval(function() {
         
 
     	var proc = spawn('./run.sh', [active.repo, active.sha]);
+	active.theproc = proc;
 
     	proc.stdout.on ('data', function (data) {
     		var s = data.toString();
@@ -109,14 +110,16 @@ function add(repo,sha,isDaemon) {
         }
 	}
 
-	var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new'};
+	var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new', theproc: null};
 
 	if (isDaemon) {
 		job.state = 'active';
     	job.attempts += 1;
+	daemons.push (job);
     	console.log('running daemon: ' + job.repo + '@' + job.sha);
         
     	var proc = spawn('./run.sh', [job.repo, job.sha]);
+	job.theproc = proc;
 
     	proc.stdout.on ('data', function (data) {
     		var s = data.toString();
@@ -142,6 +145,22 @@ function add(repo,sha,isDaemon) {
 		queue.push(job);
 		console.log('added normal');
 	}
+}
+
+function tryToKillJob (job, repo, sha) {
+    if (job.repo === repo && job.sha === sha) {
+        job.status = 'killing';
+	job.theproc.kill ('SIGKILL');
+    }
+}
+
+function kill (repo, sha, fn) {
+    if (active !== null)
+	tryToKillJob (active, repo, sha);
+
+    daemons.forEach (function (job) {
+    	    tryToKillJob (job, repo, sha);
+	});
 }
 
 function showOne(p,res) {
@@ -221,3 +240,4 @@ function status(/* req,res */) {
 exports.add = add;
 exports.status = status;
 exports.dump = dump;
+exports.kill = kill;

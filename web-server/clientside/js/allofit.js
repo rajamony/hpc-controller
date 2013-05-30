@@ -330,11 +330,15 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.emit ("getjoblist", {});
 
-  $scope.KillJob = function () {
+  $scope.KillJobs = function () {
     $scope.ClearErrors();
     $scope.joblist.forEach (function (u) {
-        if (u.mustact)
-          socket.emit ("killjob", {repo: u.repo, sha: u.sha});
+        if (u.mustact) {
+	  var killit = {repo: u.repo, sha: u.sha};
+          socket.emit ("killjob", killit);
+	  console.log ("Sending killjob for ");
+	  console.dir (killit);
+        }
       });
   }
 
