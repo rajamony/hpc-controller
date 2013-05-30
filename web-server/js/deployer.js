@@ -22,6 +22,7 @@
 
 var queue = [];
 var active = null;
+var daemons = [];
 var done = [];
 var spawn = require ('child_process').spawn;
 var fs = require('fs');
@@ -79,7 +80,11 @@ setInterval(function() {
     }  
 },1000)
 
-function add(repo,sha) {
+function addDaemon(repo,sha) {
+
+}
+
+function add(repo,sha,isDaemon) {
 
 	if ((active != null) && (active.repo == repo) && active.sha == sha) {
 		console.log('already active');
@@ -95,9 +100,48 @@ function add(repo,sha) {
         }
 	}
 
-	queue.push({ repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new'});
-	console.log('added');
+	for(i in daemons) {
+		var p = daemons[i];
+		console.log('looking at: ' + p.repo + ' ' + p.sha);
+        if ((p.repo == repo) && (p.sha == sha)) {
+        	console.log('already daemon');
+        	return;
+        }
+	}
 
+	var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new'};
+
+	if (isDaemon === "1") {
+		job.state = 'active';
+    	job.attempts += 1;
+    	console.log('running daemon: ' + job.repo + '@' + job.sha);
+        
+    	var proc = spawn('./run.sh', [job.repo, job.sha]);
+
+    	proc.stdout.on ('data', function (data) {
+    		var s = data.toString();
+    		console.log (s);
+    		job.out += s;
+    	});
+		proc.stderr.on ('data', function (data) {
+			var s = data.toString();
+			console.log (s);
+			job.err += s;
+		});
+		proc.on ('exit', function (code,signal) {
+			if (code === 0) {
+				job.state = 'done';
+	    	} else {
+	    		done.state = 'failed';
+	    	}
+	    	done.push(job);
+	    	daemons.splice(daemons.indexOf(job),1);
+
+		});
+	} else {
+		queue.push(job);
+		console.log('added normal');
+	}
 }
 
 function showOne(p,res) {
@@ -119,7 +163,35 @@ function showOne(p,res) {
     res.write(p.state);
     res.write('</td>');
 
+    res.write('<td>');
+    res.write(p.isDaemon);
+    res.write('</td>');
+
 	res.write('</tr>');
+}
+
+function dump(req,res) {
+ 	res.writeHead(200, { 'Content-Type' : 'text/html'});
+ 	res.write('<html>');
+ 	res.write('<body>');
+ 
+ 	res.write('<h1>');
+ 	res.write('Status');
+ 	res.write('</h1>');
+ 	res.write('<table>');
+ 
+ 	queue.forEach(function(p) { showOne(p,res); });
+ 	daemons.forEach(function(p) { showOne(p,res); });
+ 	if (active != null) {
+ 		showOne(active,res);
+ 	}
+ 	done.forEach(function(p) { showOne(p,res); });
+ 
+ 	res.write('</table>');
+ 	res.write('</body>');
+ 	res.write('</html>');
+ 	res.end();
+    
 }
 
 function status(/* req,res */) {
@@ -148,3 +220,4 @@ function status(/* req,res */) {
 
 exports.add = add;
 exports.status = status;
+exports.dump = dump;
