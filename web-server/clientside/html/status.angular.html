@@ -9,6 +9,7 @@
           <th> Commit SHA-1 </th>
           <th> Current Attempt </th>
           <th> Current State </th>
+          <th> Is Daemon </th>
           <th class="selectit"> Choose
           	 <label class="checkbox"> 
           		{{_alljobs && "Unselect" || "Select"}} all <input class="btn" ng-change="JobSelected (false, _alljobs)" ng-model="_alljobs" type="checkbox"> 
@@ -20,6 +21,7 @@
           <td> {{u.sha}} </td>
           <td> {{u.attempts}} </td>
           <td> {{u.state}} </td>
+          <td> {{u.daemon}} </td>
           <td class="selectit"> 
 		<input type="checkbox" ng-show="u.state != 'done'" ng-change="JobSelected(true, u.mustact)" ng-model="u.mustact" ng-checked="u.mustact"> 
 	  </td>

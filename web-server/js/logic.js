@@ -398,10 +398,10 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
     socket.on ('getjoblist', function () {
     	    var joblist = deployer.status();
 	    var alljobs = [];
-	    joblist.active.forEach (function (job) {alljobs.push (job);});
-	    joblist.pending.forEach (function (job) {alljobs.push (job);});
-	    joblist.done.forEach (function (job) {alljobs.push (job);});
-	    joblist.daemons.forEach (function (job) {alljobs.push (job);});
+	    joblist.active.forEach (function (job) {alljobs.push ({repo: job.repo, sha: job.sha, state: job.state, attempts: job.attempts, daemon: job.isDaemon});});
+	    joblist.pending.forEach (function (job) {alljobs.push ({repo: job.repo, sha: job.sha, state: job.state, attempts: job.attempts, daemon: job.isDaemon});});
+	    joblist.done.forEach (function (job) {alljobs.push ({repo: job.repo, sha: job.sha, state: job.state, attempts: job.attempts, daemon: job.isDaemon});});
+	    joblist.daemons.forEach (function (job) {alljobs.push ({repo: job.repo, sha: job.sha, state: job.state, attempts: job.attempts, daemon: job.isDaemon});});
 	    socket.emit ('getjoblist_granted', alljobs);
 	});
 
