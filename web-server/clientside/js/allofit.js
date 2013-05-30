@@ -343,7 +343,9 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       $scope.numjobstoactupon += value ? 1 : -1;
     else {
       $scope.joblist.forEach (function (u) {u.mustact = value;});
-      $scope.numjobstoactupon = value * $scope.joblist.length;
+      var killablejobs = 0;
+      $scope.joblist.forEach (function (u) {killablejobs += (u.state != "done");});
+      $scope.numjobstoactupon = value * killablejobs;
     }
   }
 
