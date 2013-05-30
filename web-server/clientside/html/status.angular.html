@@ -20,7 +20,7 @@
           <td> {{u.sha}} </td>
           <td> {{u.attempts}} </td>
           <td> {{u.state}} </td>
-          <td class="selectit"> <input type="checkbox" ng-change="JobSelected(true, u.mustact)" ng-model="u.mustact" ng-checked="u.mustact"> </td>
+          <td class="selectit"> <input type="checkbox" ng-show={{u.state!='done'}} ng-change="JobSelected(true, u.mustact)" ng-model="u.mustact" ng-checked="u.mustact"> </td>
         </tr>
       </table>
       <input type="submit" class="btn btn-primary" ng-click="KillJobs()" ng-disabled="numjobstoactupon==0" value="Kill job">
