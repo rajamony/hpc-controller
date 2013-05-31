@@ -136,6 +136,7 @@ function add(repo,sha,isDaemon) {
         setState (job, 'active');
         job.attempts += 1;
         daemons.push (job);
+        mylogic.informAdmin ('askforthejoblist', {});
         console.log('running daemon: ' + job.repo + '@' + job.sha);
         
         var proc = spawn('./run.sh', [job.repo, job.sha], { detached : true });
