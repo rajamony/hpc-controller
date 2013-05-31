@@ -347,9 +347,10 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       console.log ("jobstatusupdate " + JSON.stringify (job));
       $scope.joblog.unshift (job);
       $scope.joblist.forEach (function (u) {
-          if ((u.repo === job.repo) && (u.sha === job.sha))
+          if ((u.repo === job.repo) && (u.sha === job.sha)) {
 	    u.state = job.newstate;
 	    u.attempts = job.attempts;
+	  }
         });
     });
 
