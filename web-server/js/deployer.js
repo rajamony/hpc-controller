@@ -50,19 +50,32 @@ function setState (thejob, newstate) {
     thejob.state = newstate;
 }
 
+function getNextJob () {
+    for (var i = 0; i < queue.length; i++) {
+        var j = queue[i];
+	if (j.hibernatecount >= 0) {
+	    queue.splice (i, 1);
+	    return j;
+	}
+    }
+    return null;
+}
+
 setInterval(function() {
+    queue.forEach (function (j) {j.hibernatecount += 1;});
     if ((active == null) && (queue.length != 0)) {
-        active = queue[0];
+        active = getNextJob(); // queue[0];
+	if (active === null)
+	    return;
+
         setState (active, 'active');
         active.attempts += 1;
-    console.log ('DATA> pending rm ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
-        queue.splice(0,1);
+    	console.log ('DATA> pending rm ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
         console.log('trying: ' + active.repo + '@' + active.sha);
-        
 
         var proc = spawn('./run.sh', [active.repo, active.sha], { detached : true });
         active.theproc = proc;
-    console.log ('DATA> active spawn ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
+    	console.log ('DATA> active spawn ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
 
         proc.stdout.on ('data', function (data) {
             var s = data.toString();
@@ -81,6 +94,7 @@ setInterval(function() {
 		    // unhapy, try again
 		    setState (active, 'unhappy');
 		    console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
+		    active.hibernatecount = -60;
 		    queue.push(active);
 		    console.log ('DATA> pending add ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
 		} else {
@@ -130,7 +144,7 @@ function add(repo,sha,isDaemon) {
         }
     }
 
-    var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new', theproc: null};
+    var job = { hibernatecount: 0, isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new', theproc: null};
 
     if (isDaemon) {
         setState (job, 'active');
@@ -140,7 +154,7 @@ function add(repo,sha,isDaemon) {
         console.log('running daemon: ' + job.repo + '@' + job.sha);
         
         var proc = spawn('./run.sh', [job.repo, job.sha], { detached : true });
-    console.log ('DATA> daemon spawn ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
+    	console.log ('DATA> daemon spawn ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
         job.theproc = proc;
 
         proc.stdout.on ('data', function (data) {
@@ -200,6 +214,8 @@ function kill (repo, sha) {
 }
 
 function killAll() {
+    queue = [];
+
     if (active !== null)
         tryToKillJob(active, active.repo, active.sha);
 
