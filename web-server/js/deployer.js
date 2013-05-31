@@ -158,7 +158,7 @@ function tryToKillJob (job, repo, sha) {
     }
 }
 
-function kill (repo, sha, fn) {
+function kill (repo, sha) {
     if (active !== null)
 	   tryToKillJob (active, repo, sha);
 

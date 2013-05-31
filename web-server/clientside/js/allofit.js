@@ -342,6 +342,11 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       });
   }
 
+  $scope.KillAllJobs = function () {
+    $scope.ClearErrors();
+    socket.emit ("killalljobs", {});
+  }
+
   $scope.JobSelected = function (applicabletoone, value) {
     if (applicabletoone) 
       $scope.numjobstoactupon += value ? 1 : -1;

@@ -407,12 +407,12 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
 
     socket.on ('killjob', function (job) {
 	    console.log ("Got a killjob for repo <" + job.repo + " @ " + job.sha + ">");
-    	    deployer.kill (job.repo, job.sha, function (err) {
-	    	    if (typeof err === 'undefined')
-		        socket.emit ('killjob_granted', job);	// FIXME: Emit the new joblist right here instead of waiting for the client request
-		    else
-		        EmitError ('Could not kill job <' + job.repo + ',' + job.sha + '> ' + err);
-		});
+    	    deployer.kill (job.repo, job.sha); 
+	});
+
+    socket.on ('killalljobs', function () {
+	    console.log ("Got a command to kill all jobs");
+    	    deployer.killAll ();
 	});
 }
 
