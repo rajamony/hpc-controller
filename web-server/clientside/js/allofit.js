@@ -344,7 +344,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   }
 
   socket.on ('jobstatusupdate', function (job) {
-      joblog.unshift (job);
+      $scope.joblog.unshift (job);
       $scope.joblist.forEach (function (u) {
           if ((u.repo === job.repo) && (u.sha === job.sha))
 	    u.state = job.newstate;
