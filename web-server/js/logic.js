@@ -504,7 +504,8 @@ exports.informAdmin = function (eventname, data) {
 };
 
 
-exports.exitnow = function (req, res) {
+exports.exitnow = function (req, res, deployer) {
     res.end ('Got an exit command at ' + new Date());
+    deployer.killAll ();
     setTimeout (process.exit, 1000);	// An inelegant way of making sure the response is received before the server dies
 };

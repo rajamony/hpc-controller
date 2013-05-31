@@ -110,9 +110,12 @@ if (process.env.TESTING) {
   })
 }
 
+
 app.all('/status', deployer.status);
 
-app.get ('/exitnow?*', logic.exitnow);
+app.get ('/exitnow?*', function (req, res) {
+	logic.exitnow (req, res, deployer);
+    }); 
 app.use (function (err, req, res, next) { console.error ("\nInternal error:" + err); res.status (500); res.end (JSON.stringify({error: err.toString()})); });
 staticurlmaps.forEach (function (x) { app.use (x.root, express.static(__dirname + x.disklocation, {maxAge: 0}));});
 
