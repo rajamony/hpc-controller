@@ -326,6 +326,7 @@ function ProjectStatusCtrl ($scope, $location, wrappedsocket, rootscope, routepa
 StatusCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numjobstoactupon = 0;
+  $scope.joblog = [];
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getjoblist", {});
@@ -341,6 +342,15 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
         }
       });
   }
+
+  socket.on ('jobstatusupdate', function (job) {
+      joblog.unshift (job);
+      $scope.joblist.forEach (function (u) {
+          if ((u.repo === job.repo) && (u.sha === job.sha))
+	    u.state = job.newstate;
+        });
+    });
+
 
   $scope.KillAllJobs = function () {
     $scope.ClearErrors();

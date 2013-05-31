@@ -52,6 +52,7 @@ app.use (express.session({cookie: {maxAge: new Date(Date.now() + 10*365*86400*10
 app.use (express.favicon());
 app.use (app.router);	// I still don't understand wtf this does. http://tinyurl.com/afab75h is not entirely correct
 
+deployer.setLogic(logic);
 app.all ('/launchrun?*', function (req, res) {logic.projectupdate (deployer, io, sessionSockets, users, req, res);});
 
 // XXX For testing without github

@@ -32,6 +32,10 @@
     </form>
   </div>
 
+  <div class="span12 form-signin" ng-show="joblog.length==0">
+    <pre><ul><li ng-repeat="j in joblog"> {{j.when}}: Job {{j.repo}} @ {{j.sha}} switched from {{j.oldstate}} to {{j.newstate}} </li></ul></pre>
+  </div>
+
   <div class="span12 form-signin" ng-show="joblist.length==0">
     There are no active,pending, or done jobs to show right now.
   </div>
