@@ -189,6 +189,13 @@ function kill (repo, sha) {
     daemons.forEach (function (job) {
             tryToKillJob (job, repo, sha);
     });
+
+    queue.forEach (function (job) {
+	    if ((job.repo === repo) && (job.sha === sha)) {
+		console.log ("kill: Removing unhappy job from queue");
+		queue.splice(queue.indexOf(job),1);
+	    }
+	});
 }
 
 function killAll() {
