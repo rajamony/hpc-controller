@@ -82,8 +82,8 @@ setInterval(function() {
 	        		}
 	        	}));
 	    	} else {
+	    		active.state = 'failed';
 	    		done.push(active);
-	    		done.state = 'failed';
 			console.log ('DATA> active exitfailed ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	    		active = null;
 	    	}
