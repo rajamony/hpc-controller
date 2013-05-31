@@ -53,7 +53,7 @@ function setState (newstate) {
 setInterval(function() {
     if ((active == null) && (queue.length != 0)) {
     	active = queue[0];
-    	active.setState('active');
+    	setState (active, 'active');
     	active.attempts += 1;
 	console.log ('DATA> pending rm ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
     	queue.splice(0,1);
@@ -80,7 +80,7 @@ setInterval(function() {
 	        	if (fs.exists(active.sha + '/unhappy',function(ex) {
 	        		if (ex) {
 	        			// unhapy, try again
-	        			active.setState ('unhappy');
+	        			setState (active, 'unhappy');
 					console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	        			queue.push(active);
 					console.log ('DATA> pending add ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
@@ -88,13 +88,13 @@ setInterval(function() {
 	        		} else {
 	        			// happy, done
 	        			done.push(active);
-	        			active.setState ('done');
+	        			setState (active, 'done');
 					console.log ('DATA> active exitdone ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	        			active = null;
 	        		}
 	        	}));
 	    	} else {
-	    		active.setState ('failed');
+	    		setState (active, 'failed');
 	    		done.push(active);
 			console.log ('DATA> active exitfailed ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	    		active = null;
@@ -136,7 +136,7 @@ function add(repo,sha,isDaemon) {
 	var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new', theproc: null};
 
 	if (isDaemon) {
-		job.setState ('active');
+		setState (job, 'active');
     	job.attempts += 1;
         daemons.push (job);
     	console.log('running daemon: ' + job.repo + '@' + job.sha);
@@ -159,10 +159,10 @@ function add(repo,sha,isDaemon) {
 			console.log ("Got exit for <" + job.repo + " @ " + job.sha + "> with code " + code + " and signal " + signal);
 			if (code === 0) {
 				console.log ('DATA> daemon exitdone ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
-				job.setState ('done');
+				setState (job, 'done');
 	    	} else {
 			console.log ('DATA> daemon exitfailed ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
-	    		job.setState ('failed');
+	    		setState (job, 'failed');
 	    	}
 	    	done.push(job);
 	    	daemons.splice(daemons.indexOf(job),1);
@@ -178,7 +178,7 @@ function add(repo,sha,isDaemon) {
 function tryToKillJob (job, repo, sha) {
     if ((job.repo === repo) && (job.sha === sha)) {
         console.log ("tryToKillJob: Killing job repo <" + job.repo + " @ " + job.sha + ">");
-        job.setState ('killing');
+        setState (job, 'killing');
         //job.theproc.kill ('SIGKILL');
         spawn("kill",["-9",-job.theproc.pid]);
     }
