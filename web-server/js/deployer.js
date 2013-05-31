@@ -172,6 +172,7 @@ function add(repo,sha,isDaemon) {
 		queue.push(job);
 		console.log ('DATA> pending add ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
 		console.log('added normal');
+		mylogic.informAdmin ('askforthejoblist', {});
 	}
 }
 
