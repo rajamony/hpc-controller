@@ -137,3 +137,4 @@ sessionSockets.on('connection', function (err, socket, session) {
 logic.setup (operatingenv, fs, users);
 console.log('listening on port ' + port);
 server.listen (port, '0.0.0.0');
+
