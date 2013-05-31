@@ -68,9 +68,10 @@ setInterval(function() {
 	        	if (fs.exists(active.sha + '/unhappy',function(ex) {
 	        		if (ex) {
 	        			// unhapy, try again
-	        			queue.push(active);
 	        			active.state = 'unhappy';
 					console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
+	        			queue.push(active);
+					console.log ('DATA> pending add ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
 	        			active = null;
 	        		} else {
 	        			// happy, done
