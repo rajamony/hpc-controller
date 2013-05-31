@@ -495,7 +495,7 @@ exports.projectupdate = function (deployer, io, sessionSockets, users, req, res)
 }
 
 
-exports.informAdmin (eventname, data) {
+exports.informAdmin = function (eventname, data) {
     if (typeof activeusers['admin'] !== 'undefined') {
 	activeusers['admin'].forEach (function (socket) {
 		socket.emit (eventname, data);

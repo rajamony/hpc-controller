@@ -45,6 +45,7 @@ function elapsedTime () {
 }
 
 function setState (newstate) {
+    console.log ('setState ' + this.repo + '@' + this.sha + ' ' + this.state ' --> ' + newstate);
     mylogic.informAdmin ('jobstatusupdate', {repo: this.repo, sha: this.sha, oldstate: this.state, newstate: newstate, when: elapsedTime()});
     this.state = newstate;
 }
