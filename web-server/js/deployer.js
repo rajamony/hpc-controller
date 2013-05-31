@@ -26,6 +26,7 @@ var daemons = [];
 var done = [];
 var spawn = require ('child_process').spawn;
 var fs = require('fs');
+var basetime = Date.now();
 
 function printQueue() {
 	queue.forEach(function(p) {
@@ -33,18 +34,23 @@ function printQueue() {
 	});
 }
 
+function elapsedTime () {
+    return (Date.now() - basetime) / 1000;
+}
 
 setInterval(function() {
     if ((active == null) && (queue.length != 0)) {
     	active = queue[0];
     	active.state = 'active';
     	active.attempts += 1;
+	console.log ('DATA> pending rm ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
     	queue.splice(0,1);
     	console.log('trying: ' + active.repo + '@' + active.sha);
         
 
     	var proc = spawn('./run.sh', [active.repo, active.sha], { detached : true });
         active.theproc = proc;
+	console.log ('DATA> active spawn ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
 
     	proc.stdout.on ('data', function (data) {
     		var s = data.toString();
@@ -64,17 +70,20 @@ setInterval(function() {
 	        			// unhapy, try again
 	        			queue.push(active);
 	        			active.state = 'unhappy';
+					console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	        			active = null;
 	        		} else {
 	        			// happy, done
 	        			done.push(active);
 	        			active.state = 'done';
+					console.log ('DATA> active exitdone ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	        			active = null;
 	        		}
 	        	}));
 	    	} else {
 	    		done.push(active);
 	    		done.state = 'failed';
+			console.log ('DATA> active exitfailed ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
 	    		active = null;
 	    	}
 		});
@@ -120,6 +129,7 @@ function add(repo,sha,isDaemon) {
     	console.log('running daemon: ' + job.repo + '@' + job.sha);
         
     	var proc = spawn('./run.sh', [job.repo, job.sha], { detached : true });
+	console.log ('DATA> daemon spawn ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
         job.theproc = proc;
 
     	proc.stdout.on ('data', function (data) {
@@ -135,8 +145,10 @@ function add(repo,sha,isDaemon) {
 		proc.on ('exit', function (code,signal) {
 			console.log ("Got exit for <" + job.repo + " @ " + job.sha + "> with code " + code + " and signal " + signal);
 			if (code === 0) {
+				console.log ('DATA> daemon exitdone ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
 				job.state = 'done';
 	    	} else {
+			console.log ('DATA> daemon exitfailed ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
 	    		job.state = 'failed';
 	    	}
 	    	done.push(job);
@@ -145,6 +157,7 @@ function add(repo,sha,isDaemon) {
 		});
 	} else {
 		queue.push(job);
+		console.log ('DATA> pending add ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
 		console.log('added normal');
 	}
 }
