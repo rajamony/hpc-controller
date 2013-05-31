@@ -327,6 +327,7 @@ StatusCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numjobstoactupon = 0;
   $scope.joblog = [];
+  var notyetseenthejoblist = true;
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getjoblist", {});
@@ -345,10 +346,13 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.on ('jobstatusupdate', function (job) {
       console.log ("jobstatusupdate " + JSON.stringify (job));
+      if (notyetseenthejoblist)
+	  socket.emit ("getjoblist", {});
       $scope.joblog.unshift (job);
       $scope.joblist.forEach (function (u) {
           if ((u.repo === job.repo) && (u.sha === job.sha))
 	    u.state = job.newstate;
+	    u.attempts = job.attempts;
         });
     });
 
@@ -375,6 +379,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
 
   socket.on ("getjoblist_granted", function (p) {
+      notyetseenthejoblist = false;
       $scope.joblist = p;
       console.log ('joblist:');
       console.dir (p);
