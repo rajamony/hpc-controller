@@ -44,10 +44,10 @@ function elapsedTime () {
     return (Date.now() - basetime) / 1000;
 }
 
-function setState (newstate) {
-    console.log ('setState ' + this.repo + '@' + this.sha + ' ' + this.state + ' --> ' + newstate);
-    mylogic.informAdmin ('jobstatusupdate', {repo: this.repo, sha: this.sha, oldstate: this.state, newstate: newstate, when: elapsedTime()});
-    this.state = newstate;
+function setState (thejob, newstate) {
+    console.log ('setState ' + thejob.repo + '@' + thejob.sha + ' ' + thejob.state + ' --> ' + newstate);
+    mylogic.informAdmin ('jobstatusupdate', {repo: thejob.repo, sha: thejob.sha, oldstate: thejob.state, newstate: newstate, when: elapsedTime()});
+    thejob.state = newstate;
 }
 
 setInterval(function() {
