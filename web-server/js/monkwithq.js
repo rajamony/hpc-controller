@@ -1,23 +1,18 @@
-/*
- * Copyright 2013- IBM
- * All rights reserved
- *
- * Licensed under the Eclipse Public License, Version 1.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
+/****************************************************************************
+ * Licensed Materials - Property of IBM 
+ * Copyright (C) IBM Corp. 2013, All Rights Reserved
+ * 
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * US Government Users Restricted Rights - Use, duplication or 
+ * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+ * 
+ * Contributor(s): Ram Rajamony and Ahmed Gheith, IBM
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Wrap monk calls with Promises/A+-compliant Q library
- * Written by: Ram Rajamony, IBM Research, Austin, TX
- *
- */
+ ***************************************************************************/
 
 (function () {
 
