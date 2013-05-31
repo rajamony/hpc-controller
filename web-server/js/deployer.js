@@ -35,9 +35,9 @@ function setLogic (logic) {
 }
 
 function printQueue() {
-	queue.forEach(function(p) {
+    queue.forEach(function(p) {
         console.log(JSON.stringify(p));
-	});
+    });
 }
 
 function elapsedTime () {
@@ -52,57 +52,54 @@ function setState (thejob, newstate) {
 
 setInterval(function() {
     if ((active == null) && (queue.length != 0)) {
-    	active = queue[0];
-    	setState (active, 'active');
-    	active.attempts += 1;
-	console.log ('DATA> pending rm ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
-    	queue.splice(0,1);
-    	console.log('trying: ' + active.repo + '@' + active.sha);
+        active = queue[0];
+        setState (active, 'active');
+        active.attempts += 1;
+    console.log ('DATA> pending rm ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
+        queue.splice(0,1);
+        console.log('trying: ' + active.repo + '@' + active.sha);
         
 
-    	var proc = spawn('./run.sh', [active.repo, active.sha], { detached : true });
+        var proc = spawn('./run.sh', [active.repo, active.sha], { detached : true });
         active.theproc = proc;
-	console.log ('DATA> active spawn ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
+    console.log ('DATA> active spawn ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
 
-    	proc.stdout.on ('data', function (data) {
-    		var s = data.toString();
-    		console.log (s);
-    		active.out += s;
-    	});
-		proc.stderr.on ('data', function (data) {
-			var s = data.toString();
-			console.log (s);
-			active.err += s;
-		});
-		proc.on ('exit', function (code,signal) {
-			console.log ("Got exit for <" + active.repo + " @ " + active.sha + "> with code " + code + " and signal " + signal);
-			if (code === 0) {
-	        	if (fs.exists(active.sha + '/unhappy',function(ex) {
-	        		if (ex) {
-	        			// unhapy, try again
-	        			setState (active, 'unhappy');
-					console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
-	        			queue.push(active);
-					console.log ('DATA> pending add ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
-	        			active = null;
-	        		} else {
-	        			// happy, done
-	        			done.push(active);
-	        			setState (active, 'done');
-					console.log ('DATA> active exitdone ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
-	        			active = null;
-	        		}
-	        	}));
-	    	} else {
-	    		setState (active, 'failed');
-	    		done.push(active);
+        proc.stdout.on ('data', function (data) {
+            var s = data.toString();
+            console.log (s);
+            active.out += s;
+        });
+        proc.stderr.on ('data', function (data) {
+            var s = data.toString();
+            console.log (s);
+            active.err += s;
+        });
+        proc.on ('exit', function (code,signal) {
+            console.log ("Got exit for <" + active.repo + " @ " + active.sha + "> with code " + code + " and signal " + signal);
+	    fs.exists(active.sha + '/unhappy',function(ex) {
+		if (ex) {
+		    // unhapy, try again
+		    setState (active, 'unhappy');
+		    console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
+		    queue.push(active);
+		    console.log ('DATA> pending add ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
+		} else {
+		    if (code === 0) {
+			// happy, done
+			done.push(active);
+			setState (active, 'done');
+			console.log ('DATA> active exitdone ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
+		    } else {
+			setState (active, 'failed');
+			done.push(active);
 			console.log ('DATA> active exitfailed ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
-	    		active = null;
-	    	}
-		});
-
-    }  
-},1000)
+		    }
+		}
+		active = null;
+	    });
+        });
+    }
+},1000);
 
 function addDaemon(repo,sha) {
 
@@ -110,70 +107,70 @@ function addDaemon(repo,sha) {
 
 function add(repo,sha,isDaemon) {
 
-	if ((active != null) && (active.repo == repo) && active.sha == sha) {
-		console.log('already active');
-		return;
-	}
+    if ((active != null) && (active.repo == repo) && active.sha == sha) {
+        console.log('already active');
+        return;
+    }
 
-	for(i in queue) {
-		var p = queue[i];
-		console.log('looking at: ' + p.repo + ' ' + p.sha);
+    for(i in queue) {
+        var p = queue[i];
+        console.log('looking at: ' + p.repo + ' ' + p.sha);
         if ((p.repo == repo) && (p.sha == sha)) {
-        	console.log('already there');
-        	return;
+            console.log('already there');
+            return;
         }
-	}
+    }
 
-	for(i in daemons) {
-		var p = daemons[i];
-		console.log('looking at: ' + p.repo + ' ' + p.sha);
+    for(i in daemons) {
+        var p = daemons[i];
+        console.log('looking at: ' + p.repo + ' ' + p.sha);
         if ((p.repo == repo) && (p.sha == sha)) {
-        	console.log('already daemon');
-        	return;
+            console.log('already daemon');
+            return;
         }
-	}
+    }
 
-	var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new', theproc: null};
+    var job = { isDaemon : isDaemon, repo : repo, sha : sha, out : '', err : '', attempts : 0, state : 'new', theproc: null};
 
-	if (isDaemon) {
-		setState (job, 'active');
-    	job.attempts += 1;
+    if (isDaemon) {
+        setState (job, 'active');
+        job.attempts += 1;
         daemons.push (job);
-    	console.log('running daemon: ' + job.repo + '@' + job.sha);
+        console.log('running daemon: ' + job.repo + '@' + job.sha);
         
-    	var proc = spawn('./run.sh', [job.repo, job.sha], { detached : true });
-	console.log ('DATA> daemon spawn ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
+        var proc = spawn('./run.sh', [job.repo, job.sha], { detached : true });
+    console.log ('DATA> daemon spawn ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
         job.theproc = proc;
 
-    	proc.stdout.on ('data', function (data) {
-    		var s = data.toString();
-    		console.log (s);
-    		job.out += s;
-    	});
-		proc.stderr.on ('data', function (data) {
-			var s = data.toString();
-			console.log (s);
-			job.err += s;
-		});
-		proc.on ('exit', function (code,signal) {
-			console.log ("Got exit for <" + job.repo + " @ " + job.sha + "> with code " + code + " and signal " + signal);
-			if (code === 0) {
-				console.log ('DATA> daemon exitdone ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
-				setState (job, 'done');
-	    	} else {
-			console.log ('DATA> daemon exitfailed ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
-	    		setState (job, 'failed');
-	    	}
-	    	done.push(job);
-	    	daemons.splice(daemons.indexOf(job),1);
+        proc.stdout.on ('data', function (data) {
+            var s = data.toString();
+            console.log (s);
+            job.out += s;
+        });
+        proc.stderr.on ('data', function (data) {
+            var s = data.toString();
+            console.log (s);
+            job.err += s;
+        });
+        proc.on ('exit', function (code,signal) {
+            console.log ("Got exit for <" + job.repo + " @ " + job.sha + "> with code " + code + " and signal " + signal);
+            if (code === 0) {
+                console.log ('DATA> daemon exitdone ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
+                setState (job, 'done');
+            } else {
+            console.log ('DATA> daemon exitfailed ' + job.repo + '@' + job.sha + ' ' + elapsedTime());
+                setState (job, 'failed');
+            }
+            done.push(job);
+            daemons.splice(daemons.indexOf(job),1);
 
-		});
-	} else {
-		queue.push(job);
-		console.log ('DATA> pending add ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
-		console.log('added normal');
-		mylogic.informAdmin ('askforthejoblist', {});
-	}
+        });
+    } else {
+        queue.push(job);
+        console.log ('DATA> pending add ' + job.repo + '@' + job.sha + ' ' + elapsedTime()); 
+        console.log('added normal');
+        mylogic.informAdmin ('askforthejoblist', {});
+    }
 }
 
 function tryToKillJob (job, repo, sha) {
@@ -187,11 +184,11 @@ function tryToKillJob (job, repo, sha) {
 
 function kill (repo, sha) {
     if (active !== null)
-	   tryToKillJob (active, repo, sha);
+       tryToKillJob (active, repo, sha);
 
     daemons.forEach (function (job) {
-    	    tryToKillJob (job, repo, sha);
-	});
+            tryToKillJob (job, repo, sha);
+    });
 }
 
 function killAll() {
@@ -204,9 +201,9 @@ function killAll() {
 }
 
 function showOne(p,res) {
-	res.write('<tr>');
+    res.write('<tr>');
 
-	res.write('<td>');
+    res.write('<td>');
     res.write(p.repo);
     res.write('</td>');
 
@@ -226,53 +223,53 @@ function showOne(p,res) {
     res.write(p.isDaemon);
     res.write('</td>');
 
-	res.write('</tr>');
+    res.write('</tr>');
 }
 
 function dump(req,res) {
- 	res.writeHead(200, { 'Content-Type' : 'text/html'});
- 	res.write('<html>');
- 	res.write('<body>');
+     res.writeHead(200, { 'Content-Type' : 'text/html'});
+     res.write('<html>');
+     res.write('<body>');
  
- 	res.write('<h1>');
- 	res.write('Status');
- 	res.write('</h1>');
- 	res.write('<table>');
+     res.write('<h1>');
+     res.write('Status');
+     res.write('</h1>');
+     res.write('<table>');
  
- 	queue.forEach(function(p) { showOne(p,res); });
- 	daemons.forEach(function(p) { showOne(p,res); });
- 	if (active != null) {
- 		showOne(active,res);
- 	}
- 	done.forEach(function(p) { showOne(p,res); });
+     queue.forEach(function(p) { showOne(p,res); });
+     daemons.forEach(function(p) { showOne(p,res); });
+     if (active != null) {
+         showOne(active,res);
+     }
+     done.forEach(function(p) { showOne(p,res); });
  
- 	res.write('</table>');
- 	res.write('</body>');
- 	res.write('</html>');
- 	res.end();
+     res.write('</table>');
+     res.write('</body>');
+     res.write('</html>');
+     res.end();
     
 }
 
 function status(/* req,res */) {
-// 	res.writeHead(200, { 'Content-Type' : 'text/html'});
-// 	res.write('<html>');
-// 	res.write('<body>');
+//     res.writeHead(200, { 'Content-Type' : 'text/html'});
+//     res.write('<html>');
+//     res.write('<body>');
 // 
-// 	res.write('<h1>');
-// 	res.write('Status');
-// 	res.write('</h1>');
-// 	res.write('<table>');
+//     res.write('<h1>');
+//     res.write('Status');
+//     res.write('</h1>');
+//     res.write('<table>');
 // 
-// 	queue.forEach(function(p) { showOne(p,res); });
-// 	if (active != null) {
-// 		showOne(active,res);
-// 	}
-// 	done.forEach(function(p) { showOne(p,res); });
+//     queue.forEach(function(p) { showOne(p,res); });
+//     if (active != null) {
+//         showOne(active,res);
+//     }
+//     done.forEach(function(p) { showOne(p,res); });
 // 
-// 	res.write('</table>');
-// 	res.write('</body>');
-// 	res.write('</html>');
-// 	res.end();
+//     res.write('</table>');
+//     res.write('</body>');
+//     res.write('</html>');
+//     res.end();
     return {pending: queue, active: active === null ? [] : [ active ], daemons: daemons, done: done};
     // FIXME: The above is a crude, temporary fix so that I can test the rest of my code -rajamony
 }
