@@ -15,6 +15,7 @@
  ***************************************************************************/
 
 
+var HIBERNATIONTIME = 60;
 
 var queue = [];
 var active = null;
@@ -90,7 +91,7 @@ setInterval(function() {
 		    // unhapy, try again
 		    setState (active, 'unhappy');
 		    console.log ('DATA> active exitunhappy ' + active.repo + '@' + active.sha + ' ' + elapsedTime());
-		    active.hibernatecount = -60;
+		    active.hibernatecount = 0 - HIBERNATIONTIME;
 		    queue.push(active);
 		    console.log ('DATA> pending add ' + active.repo + '@' + active.sha + ' ' + elapsedTime()); 
 		} else {
