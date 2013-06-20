@@ -34,7 +34,7 @@ function Jobplot (bbox) {
   }
 
   // job2.data.push ({t0: 25,  t1: 29, state: 'active'});
-  function addData (when, oldstate, newstate) {
+  this.addData = function (when, oldstate, newstate) {
     var l = thisplot.data.length;
     if (thisplot.data[l].state === oldstate) { // Retrieve the last entry in our data. The state had better match oldstate
       thisplot.data[l].t1 = when;
