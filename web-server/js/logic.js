@@ -149,7 +149,7 @@ exports.main = function (deployer, io, sessionSockets, connectionerror, socket, 
      */
 
     setExceptionHandling (socket);
-    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: serverstarttime, site_hostname: operatingenv.hostname});  // All see this
+    socket.emit('info', { site_title: 'HPC Control Center', serverstarttime: serverstarttime, runningfortime: Date.now() - serverstarttime, site_hostname: operatingenv.hostname});  // All see this
     if (typeof session !== "undefined" && typeof session.userinfo !== "undefined") {
 	if (typeof forcelogout[session.userinfo.username] === 'undefined') 
 	    signInUser (socket, session.userinfo);

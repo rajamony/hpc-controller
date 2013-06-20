@@ -138,6 +138,8 @@ console.log ("MainCtrl INVOKED");
       rootscope.site_title = data.site_title;
       rootscope.site_hostname = data.site_hostname;
       rootscope.serverstarttime = formattedtime (new Date(data.serverstarttime));
+      rootscope.statusplotstarttime = Date.now() - data.runningfortime;
+      console.log ("Zero time on statut plot is " + (Date.now() - rootscope.statusplotstarttime)/1000 + " right NOW");
       rootscope.alreadygotaninfo = true;
     });
 
@@ -343,6 +345,8 @@ StatusCtrl.$inject = ['$scope', '$location', 'pocket', '$rootScope'];
 function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numjobstoactupon = 0;
   $scope.joblog = [];
+  $scope.joblist = [];
+  rootscope.ClearErrors();
   var socket = wrappedsocket ($scope);
 
   socket.emit ("getjoblist", {});
@@ -358,18 +362,6 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
         }
       });
   }
-
-  socket.on ('jobstatusupdate', function (job) {
-      console.log ("jobstatusupdate " + JSON.stringify (job));
-      $scope.joblog.unshift (job);
-      $scope.joblist.forEach (function (u) {
-          if ((u.repo === job.repo) && (u.sha === job.sha)) {
-	    u.state = job.newstate;
-	    u.attempts = job.attempts;
-	  }
-        });
-    });
-
 
   $scope.KillAllJobs = function () {
     $scope.ClearErrors();
@@ -393,9 +385,82 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   socket.on ("askforthejoblist", function () { socket.emit ("getjoblist", {}); });
 
+  var plot = { height: 0 /* Height of the enclosing div */, width: 960 /* Width of the enclosing div */ };
+
+  function makeStage (numjobs) {
+    plot.height = 250 * numjobs;
+    var stage = new Kinetic.Stage({ container: 'jobstatusplot', width: plot.width, height: plot.height });
+    var outline = new Kinetic.Layer();
+    outline.add (new Kinetic.Rect({ x: 0, y: 0, width: plot.width, height: plot.height, stroke: 'black', strokeWidth: 2 }));
+    stage.add (outline);
+    return stage;
+  }
+
   socket.on ("getjoblist_granted", function (p) {
       $scope.joblist = p;
       console.log ('joblist:');
       console.dir (p);
+      // Make the stage anew because the number of jobs has likely changed
+      if (typeof $scope.stage !== 'undefined')
+	$scope.stage.remove();
+      $scope.stage = makeStage ($scope.joblist.length);
     });
+
+  socket.on ('jobstatusupdate', function (job) {
+      console.log ("jobstatusupdate " + JSON.stringify (job));
+      $scope.joblog.unshift (job);
+      var jobnotfound = true;
+      for (var i = 0; i < $scope.joblist.length; i++) { 
+	var u = $scope.joblist[i];
+	if ((u.repo === job.repo) && (u.sha === job.sha)) {
+	  u.state = job.newstate;
+	  u.attempts = job.attempts;
+	  jobnotfound = false;
+
+	  if (typeof u.plot === 'undefined') { // If the job is new, create a new jobplot
+  	    var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
+	    u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 4}, color: 'red'});
+	    u.plot.animateaxis.start();
+	    $scope.stage.add (u.plot.layer);
+	  }
+
+          if (! u.plot.addData (job.when, job.oldstate, job.newstate)) { // Add this status update to the plot
+	    rootscope.error.push ("Could not process job status update");
+	    console.log ("ERROR: status update " + JSON.stringify (job) + " could not be processed");
+	  }
+	}
+      }
+      if (jobnotfound)
+	rootscope.error.push ("Cannot find job corresponding to " + job.repo + "@" + job.sha);
+    });
+
+
+/*
+  // ##########################################################################################
+
+  window.foofoo = makeStage;
+
+  var stage = makeStage (2);
+  var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
+  z = 0;	// DEBUG
+  console.log ("ZZZ " + rootscope.statusplotstarttime);
+
+  var job1 = new Jobplot ({dimensions: {x1: 0, y1: 0,   x2: plot.width, y2: 250, gap: 40}, ticks: {zero: z, num: 10, dt: 4}, nowline: {dt_zero_to_start: 36, dt_start_to_end: 0}, color: 'red'});
+  var job2 = new Jobplot ({dimensions: {x1: 0, y1: 250, x2: plot.width, y2: 500, gap: 40}, ticks: {zero: z, num: 10, dt: 4}, nowline: {dt_zero_to_start: 36, dt_start_to_end: 0}, color: 'blue'});
+
+  job1.data.push ({t0: 1,   t1: 10, state: 'new'});
+  job1.data.push ({t0: 10,  t1: 15, state: 'active'});
+  job1.data.push ({t0: 40,  t1: 50, state: 'unhappy'});
+  job1.data.push ({t0: 50,  t1: 60, state: 'active'});
+
+  job2.data.push ({t0: 0,   t1: 10, state: 'new'});
+  job2.data.push ({t0: 10,  t1: 17, state: 'active'});
+  job2.data.push ({t0: 17,  t1: 25, state: 'unhappy'});
+  job2.data.push ({t0: 25,  t1: 29, state: 'active'});
+
+  job1.animateaxis.start();
+  job2.animateaxis.start();
+  stage.add (job1.layer);
+  stage.add (job2.layer);
+*/
 }
