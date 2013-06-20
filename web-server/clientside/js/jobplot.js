@@ -35,13 +35,16 @@ function Jobplot (bbox) {
 
   // job2.data.push ({t0: 25,  t1: 29, state: 'active'});
   this.addData = function (when, oldstate, newstate) {
-    var l = thisplot.data.length;
-    if (thisplot.data[l].state === oldstate) { // Retrieve the last entry in our data. The state had better match oldstate
-      thisplot.data[l].t1 = when;
-      thisplot.data.push ({t0: when, t1: -1, state: newstate});
-      return true;
+    var valid = true, l = thisplot.data.length;
+    if (l > 0) {
+      if (thisplot.data[l-1].state === oldstate) // Retrieve the last entry in our data. The state had better match oldstate
+	thisplot.data[l-1].t1 = when;
+      else
+        valid = false;
     }
-    return false;
+    if (valid)
+      thisplot.data.push ({t0: when, t1: -1, state: newstate});
+    return valid;
   }
 
   function MAX (a, b) { return (a > b) ? a : b; }
