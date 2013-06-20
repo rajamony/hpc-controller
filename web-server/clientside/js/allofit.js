@@ -464,3 +464,4 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   stage.add (job2.layer);
 */
 }
+
