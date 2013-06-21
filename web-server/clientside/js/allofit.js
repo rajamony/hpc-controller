@@ -429,7 +429,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	  /* if (isPlottableJob (u)) */ {
 	    if (typeof u.plot === 'undefined') { // If the job is new, create a new jobplot
 	      var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
-	      u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 4}, color: 'red'});
+	      u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: 'red'});
 	      u.plot.animateaxis.start();
 	      $scope.stage.add (u.plot.layer);
 	    }
