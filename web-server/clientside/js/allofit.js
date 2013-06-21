@@ -396,6 +396,10 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     return stage;
   }
 
+  function isPlottableJob (job) {
+      return (job.state !== 'failed' && job.state !== 'done');
+  }
+
   socket.on ("getjoblist_granted", function (p) {
       $scope.joblist = p;
       console.log ('joblist:');
@@ -403,35 +407,41 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       // Make the stage anew because the number of jobs has likely changed
       if (typeof $scope.stage !== 'undefined')
 	$scope.stage.remove();
-      $scope.stage = makeStage ($scope.joblist.length);
+      var num = 0;
+      $scope.joblist.forEach (function (j) { num += isPlottableJob (j); }
+      $scope.stage = makeStage (num);
     });
 
   socket.on ('jobstatusupdate', function (job) {
       console.log ("jobstatusupdate " + JSON.stringify (job));
       $scope.joblog.unshift (job);
       var jobnotfound = true;
-      for (var i = 0; i < $scope.joblist.length; i++) { 
+      var currjob = 0;
+      for (var i = 0; i < $scope.joblist.length; i++) {
 	var u = $scope.joblist[i];
 	if ((u.repo === job.repo) && (u.sha === job.sha)) {
 	  u.state = job.newstate;
 	  u.attempts = job.attempts;
 	  jobnotfound = false;
 
-	  if (typeof u.plot === 'undefined') { // If the job is new, create a new jobplot
-  	    var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
-	    u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 4}, color: 'red'});
-	    u.plot.animateaxis.start();
-	    $scope.stage.add (u.plot.layer);
-	  }
+	  if (isPlottableJob (u)) {
+	    if (typeof u.plot === 'undefined') { // If the job is new, create a new jobplot
+	      var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
+	      u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 4}, color: 'red'});
+	      u.plot.animateaxis.start();
+	      $scope.stage.add (u.plot.layer);
+	    }
 
-          if (! u.plot.addData (job.when, job.oldstate, job.newstate)) { // Add this status update to the plot
-	    rootscope.error.push ("Could not process job status update");
-	    console.log ("ERROR: status update " + JSON.stringify (job) + " could not be processed");
+	    if (! u.plot.addData (job.when, job.oldstate, job.newstate)) { // Add this status update to the plot
+	      rootscope.error.push ("Could not process job status update");
+	      console.log ("ERROR: status update " + JSON.stringify (job) + " could not be processed");
+	    }
+	    currjob++;
 	  }
 	}
       }
       if (jobnotfound)
-	rootscope.error.push ("Cannot find job corresponding to " + job.repo + "@" + job.sha);
+	console.log ("jobstatusupdate: Cannot find job corresponding to " + job.repo + "@" + job.sha);
     });
 
 
