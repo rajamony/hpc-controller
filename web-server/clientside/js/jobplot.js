@@ -167,7 +167,7 @@ function Jobplot (bbox) {
   function renderCurrentJobs () {
     // console.log ("renderCurrentJobs:  tickatzero = " + thisplot.tickatzero);
     thisplot.data.forEach (function (data) {
-	  if ((data.t1 != -1) && ((data.t1 < thisplot.tickatzero) || (data.t0 > thisplot.nowlinetime)))
+	  if (((data.t1 != -1) && (data.t1 < thisplot.tickatzero)) || (data.t0 > thisplot.nowlinetime))
 	    return;
 	  var starttime = MAX (data.t0, thisplot.tickatzero);
 	  var endtime = (data.t1 == -1) ? thisplot.nowlinetime : MIN (data.t1, thisplot.nowlinetime);
@@ -179,7 +179,7 @@ function Jobplot (bbox) {
 	    var newjob = {rect: new Kinetic.Rect ({x: startx, y: bbox.dimensions.y2, width: width, height: h, fill: bbox.color})};
 	    thisplot.jobinfo.current.push (newjob);
 	    thisplot.jobinfo.group.add (newjob.rect);
-	    console.log ("renderCurrentJobs: Drawing job from " + startx + " (" + starttime + ") to " + width + " (" + endtime - starttime + ")");
+	    // console.log ("renderCurrentJobs: Drawing job from " + startx + " (" + starttime + ") to " + width + " (" + endtime - starttime + ")");
 	  }
       });
   }
