@@ -32,11 +32,19 @@
     </form>
   </div>
 
-  <div class="span12 form-signin" id="jobstatusplot">
+
+  <div class="span12 form-signin" ng-show="joblog.length">
+    <tabs>
+        <pane heading="Plot" id="jobstatusplot">
+	</pane>
+        <pane heading="Raw dump">
+	    <pre><ul><li ng-repeat="j in joblog"> {{j.when}}: {{j.repo}} @ {{j.sha}} &gt;  {{j.oldstate}} to {{j.newstate}} </li></ul></pre>
+	</pane>
+    </tabs>
   </div>
 
   <div class="span12 form-signin" ng-show="joblog.length">
-    <pre><ul><li ng-repeat="j in joblog"> {{j.when}}: Job {{j.repo}} @ {{j.sha}} switched from {{j.oldstate}} to {{j.newstate}} </li></ul></pre>
+    <pre><ul><li ng-repeat="j in joblog"> {{j.when}}: {{j.repo}} @ {{j.sha}} &gt;  {{j.oldstate}} to {{j.newstate}} </li></ul></pre>
   </div>
 
   <div class="span12 form-signin" ng-show="(joblist.length==0) && (joblog.length == 0)">

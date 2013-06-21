@@ -19,7 +19,7 @@
 var globsocket;
 
 // Declare app level module which depends on filters, and services
-var app = angular.module('myApp', [])
+var app = angular.module('myApp', ['ui.bootstrap'])
   .config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $routeProvider.when('/administer',	                {templateUrl: '/html/admin.angular.html', 	  controller: AdministerCtrl});
     $routeProvider.when('/', 		                {templateUrl: '/html/login.angular.html', 	  controller: FrontDoorCtrl});
