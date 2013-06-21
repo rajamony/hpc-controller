@@ -413,7 +413,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     });
 
   socket.on ('jobstatusupdate', function (job) {
-      console.log ("jobstatusupdate " + JSON.stringify (job));
+      // console.log ("jobstatusupdate " + JSON.stringify (job));
       $scope.joblog.unshift (job);
       var jobnotfound = true;
       var currjob = 0;
