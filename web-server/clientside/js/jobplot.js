@@ -44,6 +44,7 @@ function Jobplot (bbox) {
     }
     if (valid)
       thisplot.data.push ({t0: when, t1: -1, state: newstate});
+    console.log ("addData: Job state change from " + oldstate + " to " + newstate + " at " + when); 
     return valid;
   }
 
