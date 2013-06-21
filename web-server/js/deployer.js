@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 
-var HIBERNATIONTIME = 60;
+var HIBERNATIONTIME = 10;
 
 var queue = [];
 var active = null;
