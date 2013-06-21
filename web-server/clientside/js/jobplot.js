@@ -154,7 +154,7 @@ function Jobplot (bbox) {
       var c = nowline.getPoints();
       nowline.setPoints ([{x: xpos, y: c[0].y}, {x: xpos, y: c[1].y}]);
       tooltip.setX (xpos);
-      thisplot.nowlinetime = dt;
+      thisplot.nowlinetime = thisplot.tickatzero + dt;
     }
   }, thisplot.layer);
 
