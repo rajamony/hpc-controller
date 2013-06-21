@@ -408,7 +408,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       if (typeof $scope.stage !== 'undefined')
 	$scope.stage.remove();
       var num = 0;
-      $scope.joblist.forEach (function (j) { num += isPlottableJob (j); }
+      $scope.joblist.forEach (function (j) { num += isPlottableJob (j); });
       $scope.stage = makeStage (num);
     });
 
