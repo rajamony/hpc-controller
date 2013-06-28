@@ -389,7 +389,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   var plot = { height: 0 /* Height of the enclosing div */, width: 960 /* Width of the enclosing div */ };
 
   function makeStage (numjobs) {
-    plot.height = 160;
+    plot.height = 175;
     var stage = new Kinetic.Stage({ container: 'jobstatusplot', width: plot.width, height: numjobs * plot.height });
     var outline = new Kinetic.Layer();
     outline.add (new Kinetic.Rect({ x: 0, y: 0, width: plot.width, height: numjobs * plot.height, stroke: 'black', strokeWidth: 2 }));
@@ -431,6 +431,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	    if (typeof u.plot === 'undefined') { // If the job is new, create a new jobplot
 	      var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
 	      u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: currjob*plot.height, y2: (currjob+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: plotcolors[currjob % plotcolors.length]});
+	      console.log ("New plot: " + plotcolors[currjob % plotcolors.length] + ", dimension: " + currjob*plot.height + " - " + (currjob+1)*plot.height);
 	      u.plot.animateaxis.start();
 	      $scope.stage.add (u.plot.layer);
 	    }
