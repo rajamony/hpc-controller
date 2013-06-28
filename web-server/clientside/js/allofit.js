@@ -407,8 +407,8 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       // Make the stage anew because the number of jobs has likely changed
       if (typeof $scope.stage !== 'undefined')
 	$scope.stage.remove();
-      // var num = 0;
-      // $scope.joblist.forEach (function (j) { num += isPlottableJob (j); });
+      var num = 0;
+      $scope.joblist.forEach (function (j) { num += isPlottableJob (j); });
       var num = $scope.joblist.length; 
       $scope.stage = makeStage (num);
       console.log ("Making stage for " + num + " plots");
@@ -426,7 +426,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	  u.attempts = job.attempts;
 	  jobnotfound = false;
 
-	  /* if (isPlottableJob (u)) */ {
+	  if (isPlottableJob (u)) {
 	    if (typeof u.plot === 'undefined') { // If the job is new, create a new jobplot
 	      var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
 	      u.plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: 'red'});
