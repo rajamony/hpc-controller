@@ -388,10 +388,10 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   var plot = { height: 0 /* Height of the enclosing div */, width: 960 /* Width of the enclosing div */ };
 
   function makeStage (numjobs) {
-    plot.height = 250 * numjobs;
-    var stage = new Kinetic.Stage({ container: 'jobstatusplot', width: plot.width, height: plot.height });
+    plot.height = 250;
+    var stage = new Kinetic.Stage({ container: 'jobstatusplot', width: plot.width, height: numjobs * plot.height });
     var outline = new Kinetic.Layer();
-    outline.add (new Kinetic.Rect({ x: 0, y: 0, width: plot.width, height: plot.height, stroke: 'black', strokeWidth: 2 }));
+    outline.add (new Kinetic.Rect({ x: 0, y: 0, width: plot.width, height: numjobs * plot.height, stroke: 'black', strokeWidth: 2 }));
     stage.add (outline);
     return stage;
   }
