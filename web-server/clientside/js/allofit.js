@@ -418,11 +418,12 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       if (typeof $scope.stage !== 'undefined')
 	$scope.stage.remove();
 
-      console.log ("Making stage for " + num + " plots");
       var num = 0;
+      console.log ("Making stage for " + num + " plots");
       $scope.joblist.forEach (function (j) { num += isPlottableState (j.state); });
       var num = $scope.joblist.length; 
-      makeStageAndPlots (num);
+      if (num)
+	makeStageAndPlots (num);
 
       $scope.unplottedjobs.forEach (plotJob);
       $scope.unplottedjobs = [];
