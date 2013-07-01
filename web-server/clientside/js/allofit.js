@@ -390,6 +390,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   var plot = { height: 0 /* Height of the enclosing div */, width: 960 /* Width of the enclosing div */ };
 
   function makeStageAndPlots (numjobs) {
+    console.log ("Making stage for " + numjobs + " plots");
     plot.height = 175;
     var stage = new Kinetic.Stage({ container: 'jobstatusplot', width: plot.width, height: numjobs * plot.height });
     var outline = new Kinetic.Layer();
@@ -419,9 +420,8 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	$scope.stage.remove();
 
       var num = 0;
-      console.log ("Making stage for " + num + " plots");
       $scope.joblist.forEach (function (j) { num += isPlottableState (j.state); });
-      var num = $scope.joblist.length; 
+      var num = $scope.joblist.length;
       if (num)
 	makeStageAndPlots (num);
 
@@ -460,3 +460,5 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       }
     });
 }
+
+// TODO: In the Deployer, when removing an unhappy job, send a status notification to the client UI
