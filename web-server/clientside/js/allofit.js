@@ -414,7 +414,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       var num = $scope.joblist.length; 
       $scope.stage = makeStage (num);
       console.log ("Making stage for " + num + " plots");
-      $scope.unplottedjobs.forEach (plotjob);
+      $scope.unplottedjobs.forEach (plotJob);
       $scope.unplottedjobs = [];
     });
 
