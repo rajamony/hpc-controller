@@ -346,6 +346,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.numjobstoactupon = 0;
   $scope.joblog = [];
   $scope.joblist = [];
+  $scope.unplottedjobs = [];
   $scope.numplottablejobs = 0;
   rootscope.ClearErrors();
   var socket = wrappedsocket ($scope);
