@@ -455,7 +455,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       j.when = j.when.toFixed(2);
       j.when = ((j.when.length <= 5) ? spacing[j.when.length - 4] : '') + j.when;
       $scope.joblog.unshift (j);
-      if (! plotJob (job) {
+      if (! plotJob (job)) {
 	$scope.unplottedjobs.push (job);
 	console.log ("jobstatusupdate: Pending find job corresponding to " + job.repo + "@" + job.sha);
       }
