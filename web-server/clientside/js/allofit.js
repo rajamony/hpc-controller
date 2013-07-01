@@ -347,8 +347,6 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.joblog = [];
   $scope.joblist = [];
   $scope.unplottedjobs = [];
-  $scope.numplottablejobs = 0;
-  $scope.currentstage = {};
   rootscope.ClearErrors();
   var socket = wrappedsocket ($scope);
   var plotcolors = ['aqua', 'lime', 'red', 'blue', 'yellow', 'green', 'purple'];
@@ -397,6 +395,14 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     var outline = new Kinetic.Layer();
     outline.add (new Kinetic.Rect({ x: 0, y: 0, width: plot.width, height: numjobs * plot.height, stroke: 'black', strokeWidth: 2 }));
     stage.add (outline);
+
+    var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
+    for (var i = 0; i < numjobs; i++)
+      $scope.joblist[i].plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: plotcolors[i % plotcolors.length]});
+      console.log ("New plot: " + plotcolors[i % plotcolors.length] + ", dimension: " + i*plot.height + " - " + (i+1)*plot.height);
+      $scope.joblist[i].plot.animateaxis.start();
+      stage.add ($scope.joblist[i].plot.layer);
+    }
     return stage;
   }
 
@@ -409,20 +415,18 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       console.log ('joblist:');
       console.dir (p);
       // Make the stage anew because the number of jobs has likely changed
-      if (typeof $scope.currentstage.stage !== 'undefined')
-	$scope.currentstage.stage.remove();
+      if (typeof $scope.stage !== 'undefined')
+	$scope.stage.remove();
+
+      console.log ("Making stage for " + num + " plots");
       var num = 0;
       $scope.joblist.forEach (function (j) { num += isPlottableState (j.state); });
       var num = $scope.joblist.length; 
-      $scope.currentstage.stage = makeStage (num);
-      console.log ("Making stage for " + num + " plots");
+      makeStageAndPlots (num);
+
       $scope.unplottedjobs.forEach (plotJob);
       $scope.unplottedjobs = [];
     });
-
-  function getNewPlotOrdinal () {
-    return $scope.numplottablejobs++;
-  }
 
   function plotJob (job) {
     for (var i = 0; i < $scope.joblist.length; i++) {
@@ -430,17 +434,6 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	$scope.joblist[i].state = job.newstate;
 	$scope.joblist[i].attempts = job.attempts;
 	if (isPlottableState (job.newstate) || (typeof $scope.joblist[i].plot !== 'undefined')) {	// Plottable job OR we are already plotting it
-	  var currjob = $scope.joblist[i].plotordinal;
-	  // If the job is new, create a new jobplot
-	  if ((typeof $scope.joblist[i].plot === 'undefined') || ($scope.currentstage.stage !== $scope.joblist[i].plot.layer.parent)) {
-	    currjob = $scope.joblist[i].plotordinal = getNewPlotOrdinal();
-	    var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
-	    $scope.joblist[i].plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: currjob*plot.height, y2: (currjob+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: plotcolors[currjob % plotcolors.length]});
-	    console.log ("New plot: " + plotcolors[currjob % plotcolors.length] + ", dimension: " + currjob*plot.height + " - " + (currjob+1)*plot.height);
-	    $scope.joblist[i].plot.animateaxis.start();
-	    $scope.currentstage.stage.add ($scope.joblist[i].plot.layer);
-	  }
-
 	  if (! $scope.joblist[i].plot.addData (job.when, job.oldstate, job.newstate)) { // Add this status update to the plot
 	    rootscope.error.push ("Could not process job status update");
 	    console.log ("ERROR: status update " + JSON.stringify (job) + " could not be processed");
