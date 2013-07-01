@@ -397,7 +397,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     stage.add (outline);
 
     var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
-    for (var i = 0; i < numjobs; i++)
+    for (var i = 0; i < numjobs; i++) {
       $scope.joblist[i].plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: plotcolors[i % plotcolors.length]});
       console.log ("New plot: " + plotcolors[i % plotcolors.length] + ", dimension: " + i*plot.height + " - " + (i+1)*plot.height);
       $scope.joblist[i].plot.animateaxis.start();
