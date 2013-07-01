@@ -38,7 +38,7 @@
         <pane heading="Plot" id="jobstatusplot">
 	</pane>
         <pane heading="Raw dump">
-	    <pre><ul><li ng-repeat="j in joblog"> {{j.when}}: {{j.repo}} @ {{j.sha}} &gt;  {{j.oldstate}} to {{j.newstate}} </li></ul></pre>
+	    <pre><ul><li ng-repeat="j in joblog"> {{j.when}}: {{j.repo}} @ {{j.trimmedsha}} &gt;  {{j.oldstate}} to {{j.newstate}} </li></ul></pre>
 	</pane>
     </tabs>
   </div>
