@@ -420,7 +420,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     return $scope.numplottablejobs++;
   }
   socket.on ('jobstatusupdate', function (job) {
-      // console.log ("jobstatusupdate " + JSON.stringify (job));
+      console.log ("jobstatusupdate " + JSON.stringify (job));
       $scope.joblog.unshift (job);
       var jobnotfound = true;
       for (var i = 0; i < $scope.joblist.length; i++) {
@@ -449,35 +449,4 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       if (jobnotfound)
 	console.log ("jobstatusupdate: Cannot find job corresponding to " + job.repo + "@" + job.sha);
     });
-
-
-/*
-  // ##########################################################################################
-
-  window.foofoo = makeStage;
-
-  var stage = makeStage (2);
-  var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
-  z = 0;	// DEBUG
-  console.log ("ZZZ " + rootscope.statusplotstarttime);
-
-  var job1 = new Jobplot ({dimensions: {x1: 0, y1: 0,   x2: plot.width, y2: 250, gap: 40}, ticks: {zero: z, num: 10, dt: 4}, nowline: {dt_zero_to_start: 36, dt_start_to_end: 0}, color: 'red'});
-  var job2 = new Jobplot ({dimensions: {x1: 0, y1: 250, x2: plot.width, y2: 500, gap: 40}, ticks: {zero: z, num: 10, dt: 4}, nowline: {dt_zero_to_start: 36, dt_start_to_end: 0}, color: 'blue'});
-
-  job1.data.push ({t0: 1,   t1: 10, state: 'new'});
-  job1.data.push ({t0: 10,  t1: 15, state: 'active'});
-  job1.data.push ({t0: 40,  t1: 50, state: 'unhappy'});
-  job1.data.push ({t0: 50,  t1: 60, state: 'active'});
-
-  job2.data.push ({t0: 0,   t1: 10, state: 'new'});
-  job2.data.push ({t0: 10,  t1: 17, state: 'active'});
-  job2.data.push ({t0: 17,  t1: 25, state: 'unhappy'});
-  job2.data.push ({t0: 25,  t1: 29, state: 'active'});
-
-  job1.animateaxis.start();
-  job2.animateaxis.start();
-  stage.add (job1.layer);
-  stage.add (job2.layer);
-*/
 }
-
