@@ -407,7 +407,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       // Now add this job's status to the plot. Go through the joblog to find the most recent update for this job 
       for (var k = 0; k < $scope.joblog.length; k++) {	// joblog has most recent at the front
         var jobupdate = $scope.joblog[k];
-	if ((jopupdate.sha === $scope.joblist[i].sha) && (jobupdate.repo === $scope.joblist[i].repo)) {
+	if ((jobupdate.sha === $scope.joblist[i].sha) && (jobupdate.repo === $scope.joblist[i].repo)) {
 	  if (isPlottableState (jobupdate.newstate) || (typeof $scope.joblist[i].plot !== 'undefined')) {	// Plottable job OR we are already plotting it
 	    if (! $scope.joblist[i].plot.addData (jobupdate.when, jobupdate.oldstate, jobupdate.newstate)) { // Add this status update to the plot
 	      rootscope.error.push ("Could not process joblist job status update");
