@@ -212,6 +212,9 @@ function kill (repo, sha) {
 }
 
 function killAll() {
+    queue.forEach (function (job) {
+	  setState (job, 'failed');	// Mark the job as failed so that the UI gets notified
+	});
     queue = [];
 
     if (active !== null)

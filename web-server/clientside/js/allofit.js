@@ -404,19 +404,18 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       $scope.joblist[i].plot.animateaxis.start();
       stage.add ($scope.joblist[i].plot.layer);
 
-/*
-      // Now go through the joblog and add the state change updates for a job that we are plotting in the newly made stage
-      for (var k = $scope.joblog.length - 1; k >= 0; k--) {
-	var oldjob = $scope.joblog[k];
-	if (oldjob.sha === $scope.joblist[i].sha && oldjob.repo === $scope.joblist[i].repo) {
-	  if (! plotJob (oldjob))
-	    console.log ("ERROR - unexpectedly could not find the plot corresponding to the job " + oldjob.sha);
-	  else
-	    console.log ("GOTIT - Tacked on the oldjob data for " + oldjob.sha);
+      // Now add this job's status to the plot. Go through the joblog to find the most recent update for this job 
+      for (var k = 0; k < $scope.joblog.length; k++) {	// joblog has most recent at the front
+        var jobupdate = $scope.joblog[k];
+	if ((jopupdate.sha === $scope.joblist[i].sha) && (jobupdate.repo === $scope.joblist[i].repo)) {
+	  if (isPlottableState (jobupdate.newstate) || (typeof $scope.joblist[i].plot !== 'undefined')) {	// Plottable job OR we are already plotting it
+	    if (! $scope.joblist[i].plot.addData (jobupdate.when, jobupdate.oldstate, jobupdate.newstate)) { // Add this status update to the plot
+	      rootscope.error.push ("Could not process joblist job status update");
+	      console.log ("ERROR: joblog update " + JSON.stringify (job) + " could not be processed");
+	    }
+	  }
 	}
       }
-*/
-
     }
     $scope.stage = stage;
     // return stage;
