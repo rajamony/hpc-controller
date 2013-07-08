@@ -349,7 +349,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.unplottedjobs = [];
   rootscope.ClearErrors();
   var socket = wrappedsocket ($scope);
-  var plotcolors = ['aqua', 'lime', 'red', 'blue', 'yellow', 'green', 'purple'];
+  var plotcolors = ['red', 'green', 'blue', 'yellow', 'aqua', 'purple', 'lime'];
 
   socket.emit ("getjoblist", {});
 
@@ -410,21 +410,13 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
         var jobupdate = $scope.joblog[k];
 	if ((jobupdate.sha === $scope.joblist[i].sha) && (jobupdate.repo === $scope.joblist[i].repo)) {
 	  gotit = true;
-	  if (isPlottableState (jobupdate.newstate) || (typeof $scope.joblist[i].plot !== 'undefined')) {	// Plottable job OR we are already plotting it
-	    if (! $scope.joblist[i].plot.addData (jobupdate.when, jobupdate.oldstate, jobupdate.newstate)) { // Add this status update to the plot
-	      rootscope.error.push ("Could not process joblist job status update");
-	      console.log ("ERROR: joblog update " + JSON.stringify (jobupdate) + " could not be processed");
-	    }
-	  }
+	  if (isPlottableState (jobupdate.newstate) || (typeof $scope.joblist[i].plot !== 'undefined')) 	// Plottable job OR we are already plotting it
+	    $scope.joblist[i].plot.addData (jobupdate.when, jobupdate.oldstate, jobupdate.newstate); // Add this status update to the plot
 	  break;
 	}
       }
-      if (gotit === false) {
-	if (! $scope.joblist[i].plot.addData (z, 'new', $scope.joblist[i].state)) { // Add this status update to the plot
-	  rootscope.error.push ("Could not process firsttime joblist job status update");
-	  console.log ("ERROR: firsttime joblist update " + JSON.stringify (jobupdate) + " could not be processed");
-	}
-      }
+      if (gotit === false)
+	$scope.joblist[i].plot.addData (z, 'new', $scope.joblist[i].state); // Add this status update to the plot
     }
     $scope.stage = stage;
     // return stage;
