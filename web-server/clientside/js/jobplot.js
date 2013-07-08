@@ -59,7 +59,7 @@ function Jobplot (bbox) {
   group.add (new Kinetic.Rect({ x: bbox.dimensions.x1 + 3, y: bbox.dimensions.y1 + 3, width: bbox.dimensions.x2 - bbox.dimensions.x1 - 6, 
   							height: bbox.dimensions.y2 - bbox.dimensions.y1 - 6, stroke: 'blue', strokeWidth: 1 }));
   if (typeof bbox.dimensions.gap === "undefined")
-      bbox.dimensions.gap = 40;
+      bbox.dimensions.gap = 25;
 
   if (typeof bbox.nowline === "undefined")
       bbox.nowline = {dt_zero_to_start: 0, dt_start_to_end: bbox.ticks.num * bbox.ticks.dt * 0.85};
