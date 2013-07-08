@@ -74,10 +74,10 @@ function Jobplot (bbox) {
 
   var xaxis = new Kinetic.Line ({ points: [bbox.dimensions.x1, bbox.dimensions.y2, bbox.dimensions.x2, bbox.dimensions.y2], stroke: 'black', strokeWidth: 2, lineJoin: 'square' });
   var yaxis = new Kinetic.Line ({ points: [bbox.dimensions.x1, bbox.dimensions.y1, bbox.dimensions.x1, bbox.dimensions.y2], stroke: 'black', strokeWidth: 2, lineJoin: 'square' });
-  xaxis.moveToTop();
-  yaxis.moveToTop();
   group.add (xaxis);
   group.add (yaxis);
+  xaxis.moveToTop();
+  yaxis.moveToTop();
 
   var ticks = new Kinetic.Group();
   var tickmarks = new Kinetic.Group();
