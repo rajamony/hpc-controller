@@ -403,6 +403,16 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       console.log ("New plot: " + plotcolors[i % plotcolors.length] + ", dimension: " + i*plot.height + " - " + (i+1)*plot.height);
       $scope.joblist[i].plot.animateaxis.start();
       stage.add ($scope.joblist[i].plot.layer);
+      // Now go through the joblog and add the state change updates for a job that we are plotting in the newly made stage
+      for (var k = $scope.joblog.length - 1; k >= 0; k--) {
+	var oldjob = $scope.joblog[k];
+	if (oldjob.sha === $scope.joblist[i].sha && oldjob.repo === $scope.joblist[i].repo) {
+	  if (! plotJob (oldjob))
+	    console.log ("ERROR - unexpectedly could not find the plot corresponding to the job " + oldjob.sha);
+	  else
+	    console.log ("GOTIT - Tacked on the oldjob data for " + oldjob.sha);
+	}
+      }
     }
     $scope.stage = stage;
     // return stage;
