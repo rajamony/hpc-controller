@@ -349,7 +349,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
   $scope.unplottedjobs = [];
   rootscope.ClearErrors();
   var socket = wrappedsocket ($scope);
-  var plotcolors = ['red', 'green', 'blue', 'yellow', 'aqua', 'purple', 'lime'];
+  var plotcolors = ['red', 'green', 'blue', 'orange', 'aqua', 'purple', 'lime'];
 
   socket.emit ("getjoblist", {});
 
@@ -399,7 +399,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
     var z = parseInt ((Date.now() - rootscope.statusplotstarttime)/1000);
     for (var i = 0; i < numjobs; i++) {
-      $scope.joblist[i].plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 10}, color: plotcolors[i % plotcolors.length]});
+      $scope.joblist[i].plot = new Jobplot ({dimensions: {x1: 0, x2: plot.width, y1: i*plot.height, y2: (i+1)*plot.height}, ticks: {zero: z, num: 10, dt: 20}, color: plotcolors[i % plotcolors.length]});
       console.log ("New plot: " + plotcolors[i % plotcolors.length] + ", dimension: " + i*plot.height + " - " + (i+1)*plot.height);
       $scope.joblist[i].plot.animateaxis.start();
       stage.add ($scope.joblist[i].plot.layer);
@@ -475,5 +475,3 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       }
     });
 }
-
-// TODO: In the Deployer, when removing an unhappy job, send a status notification to the client UI. Done. Needs testing
