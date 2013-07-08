@@ -403,6 +403,8 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       console.log ("New plot: " + plotcolors[i % plotcolors.length] + ", dimension: " + i*plot.height + " - " + (i+1)*plot.height);
       $scope.joblist[i].plot.animateaxis.start();
       stage.add ($scope.joblist[i].plot.layer);
+
+/*
       // Now go through the joblog and add the state change updates for a job that we are plotting in the newly made stage
       for (var k = $scope.joblog.length - 1; k >= 0; k--) {
 	var oldjob = $scope.joblog[k];
@@ -413,6 +415,8 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	    console.log ("GOTIT - Tacked on the oldjob data for " + oldjob.sha);
 	}
       }
+*/
+
     }
     $scope.stage = stage;
     // return stage;
