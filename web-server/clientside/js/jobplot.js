@@ -67,7 +67,7 @@ function Jobplot (bbox) {
   bbox.dimensions.x1 += bbox.dimensions.gap;
   bbox.dimensions.y1 += bbox.dimensions.gap;
   bbox.dimensions.x2 -= bbox.dimensions.gap;
-  bbox.dimensions.y2 -= bbox.dimensions.gap;
+  bbox.dimensions.y2 -= bbox.dimensions.gap/2;
 
   thisplot.layer.add (group);
   thisplot.layer.add (thisplot.jobinfo.group);
