@@ -404,7 +404,8 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
       $scope.joblist[i].plot.animateaxis.start();
       stage.add ($scope.joblist[i].plot.layer);
     }
-    return stage;
+    $scope.stage = stage;
+    // return stage;
   }
 
   function isPlottableState (state) {
