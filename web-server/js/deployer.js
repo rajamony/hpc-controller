@@ -204,6 +204,7 @@ function kill (repo, sha) {
 
     queue.forEach (function (job) {
 	    if ((job.repo === repo) && (job.sha === sha)) {
+		setState (job, 'failed');	// Mark the job as failed so that the UI gets notified
 		console.log ("kill: Removing unhappy job from queue");
 		queue.splice(queue.indexOf(job),1);
 	    }

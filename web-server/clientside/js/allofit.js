@@ -461,4 +461,4 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
     });
 }
 
-// TODO: In the Deployer, when removing an unhappy job, send a status notification to the client UI
+// TODO: In the Deployer, when removing an unhappy job, send a status notification to the client UI. Done. Needs testing
