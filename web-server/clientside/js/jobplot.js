@@ -25,9 +25,9 @@ function Jobplot (bbox) {
   function stateToHeight (s) {
     switch (s) {
       case 'new':     return -15;
-      case 'active':  return -90;
+      case 'active':  return -70;
       case 'unhappy': return -15;
-      case 'killing': return -50;
+      case 'killing': return -40;
       case 'failed':  return 0;
     }
     return 0;
@@ -59,7 +59,7 @@ function Jobplot (bbox) {
   group.add (new Kinetic.Rect({ x: bbox.dimensions.x1 + 3, y: bbox.dimensions.y1 + 3, width: bbox.dimensions.x2 - bbox.dimensions.x1 - 6, 
   							height: bbox.dimensions.y2 - bbox.dimensions.y1 - 6, stroke: 'blue', strokeWidth: 1 }));
   if (typeof bbox.dimensions.gap === "undefined")
-      bbox.dimensions.gap = 25;
+      bbox.dimensions.gap = 40;
 
   if (typeof bbox.nowline === "undefined")
       bbox.nowline = {dt_zero_to_start: 0, dt_start_to_end: bbox.ticks.num * bbox.ticks.dt * 0.85};

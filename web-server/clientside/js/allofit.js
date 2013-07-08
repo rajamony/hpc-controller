@@ -391,7 +391,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 
   function makeStageAndPlots (numjobs) {
     console.log ("Making stage for " + numjobs + " plots");
-    plot.height = 150;
+    plot.height = 140;
     var stage = new Kinetic.Stage({ container: 'jobstatusplot', width: plot.width, height: numjobs * plot.height });
     var outline = new Kinetic.Layer();
     outline.add (new Kinetic.Rect({ x: 0, y: 0, width: plot.width, height: numjobs * plot.height, stroke: 'black', strokeWidth: 2 }));
