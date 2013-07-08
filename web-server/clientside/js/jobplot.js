@@ -24,9 +24,9 @@ function Jobplot (bbox) {
 
   function stateToHeight (s) {
     switch (s) {
-      case 'new':     return -20;
+      case 'new':     return -15;
       case 'active':  return -90;
-      case 'unhappy': return -20;
+      case 'unhappy': return -15;
       case 'killing': return -50;
       case 'failed':  return 0;
     }
@@ -182,6 +182,7 @@ function Jobplot (bbox) {
 	    var newjob = {rect: new Kinetic.Rect ({x: startx, y: bbox.dimensions.y2, width: width, height: h, fill: bbox.color})};
 	    thisplot.jobinfo.current.push (newjob);
 	    thisplot.jobinfo.group.add (newjob.rect);
+	    newjob.rect.moveToBottom();
 	    // console.log ("renderCurrentJobs: Drawing job from " + startx + " (" + starttime + ") to " + width + " (" + endtime - starttime + ")");
 	  }
       });
