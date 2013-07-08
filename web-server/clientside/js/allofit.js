@@ -411,7 +411,7 @@ function StatusCtrl ($scope, $location, wrappedsocket, rootscope) {
 	  if (isPlottableState (jobupdate.newstate) || (typeof $scope.joblist[i].plot !== 'undefined')) {	// Plottable job OR we are already plotting it
 	    if (! $scope.joblist[i].plot.addData (jobupdate.when, jobupdate.oldstate, jobupdate.newstate)) { // Add this status update to the plot
 	      rootscope.error.push ("Could not process joblist job status update");
-	      console.log ("ERROR: joblog update " + JSON.stringify (job) + " could not be processed");
+	      console.log ("ERROR: joblog update " + JSON.stringify (jobupdate) + " could not be processed");
 	    }
 	  }
 	}
