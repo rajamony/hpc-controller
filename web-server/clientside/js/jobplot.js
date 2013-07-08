@@ -65,9 +65,9 @@ function Jobplot (bbox) {
       bbox.nowline = {dt_zero_to_start: 0, dt_start_to_end: bbox.ticks.num * bbox.ticks.dt * 0.85};
 
   bbox.dimensions.x1 += bbox.dimensions.gap;
-  bbox.dimensions.y1 += bbox.dimensions.gap;
+  bbox.dimensions.y1 += bbox.dimensions.gap/2;
   bbox.dimensions.x2 -= bbox.dimensions.gap;
-  bbox.dimensions.y2 -= bbox.dimensions.gap/2;
+  bbox.dimensions.y2 -= bbox.dimensions.gap;
 
   thisplot.layer.add (group);
   thisplot.layer.add (thisplot.jobinfo.group);
